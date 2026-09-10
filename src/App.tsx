@@ -1,348 +1,308 @@
 import React, { useState, useEffect } from 'react';
 
-interface Company {
-  id: string;
-  name: string;
-  active: boolean;
-}
-
-interface Employee {
-  id: string;
-  name: string;
-  pin: string;
-  role: string;
-}
-
 interface AttendanceRecord {
   id: string;
-  employeeName: string;
-  type: 'IN' | 'OUT';
+  name: string;
+  type: 'Arrivée' | 'Départ';
   timestamp: string;
-  companyName: string;
+  dateStr: string;
+  location: string;
 }
 
 export default function App() {
-  const [currentCompany, setCurrentCompany] = useState<Company | null>(() => {
-    const saved = localStorage.getItem('prh_company');
-    return saved ? JSON.parse(saved) : null;
+  const [companyName, setCompanyName] = useState('Atelier Tech');
+  const [isEditingCompany, setIsEditingCompany] = useState(false);
+  const [tempCompanyName, setTempCompanyName] = useState('Atelier Tech');
+
+  const [nameInput, setNameInput] = useState('');
+  const [records, setRecords] = useState<AttendanceRecord[]>(() => {
+    const saved = localStorage.getItem('prh_records_v2');
+    return saved ? JSON.parse(saved) : [
+      { id: '1', name: 'Moïse Muluku', type: 'Arrivée', timestamp: '21:47:41', dateStr: '10/09/2026', location: '-11.5705°, 27.5510°' },
+      { id: '2', name: 'Muteba john', type: 'Arrivée', timestamp: '22:38:57', dateStr: '10/09/2026', location: '-11.5703°, 27.5513°' },
+      { id: '3', name: 'Samuel', type: 'Arrivée', timestamp: '22:20:15', dateStr: '10/09/2026', location: '-11.5704°, 27.5511°' }
+    ];
   });
 
-  const [companies, setCompanies] = useState<Company[]>(() => {
-    const saved = localStorage.getItem('prh_companies');
-    return saved ? JSON.parse(saved) : [{ id: '1', name: 'Atelier Tech', active: true }];
-  });
+  const [lastSuccess, setLastSuccess] = useState<{ name: string; type: string; time: string; gps: string } | null>(null);
+  const [loadingGps, setLoadingGps] = useState(false);
 
-  const [newCompanyName, setNewCompanyName] = useState('');
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'clock' | 'employees'>('dashboard');
-
-  const [employees, setEmployees] = useState<Employee[]>([
-    { id: '1', name: 'Jean Dupont', pin: '1234', role: 'Développeur' },
-    { id: '2', name: 'Marie Curie', pin: '5678', role: 'RH' }
-  ]);
-
-  const [records, setRecords] = useState<AttendanceRecord[]>([]);
-  const [pinInput, setPinInput] = useState('');
-  const [clockMessage, setClockMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
-
-  const [newEmpName, setNewEmpName] = useState('');
-  const [newEmpPin, setNewEmpPin] = useState('');
-  const [newEmpRole, setNewEmpRole] = useState('');
+  // Admin state
+  const [isAdminUnlocked, setIsAdminUnlocked] = useState(false);
+  const [adminPassword, setAdminPassword] = useState('');
+  const [adminError, setAdminError] = useState(false);
 
   useEffect(() => {
-    if (currentCompany) {
-      localStorage.setItem('prh_company', JSON.stringify(currentCompany));
-    } else {
-      localStorage.removeItem('prh_company');
-    }
-  }, [currentCompany]);
+    localStorage.setItem('prh_records_v2', JSON.stringify(records));
+  }, [records]);
 
-  const handleCreateCompany = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newCompanyName.trim()) return;
-    const newComp: Company = {
-      id: Date.now().toString(),
-      name: newCompanyName.trim(),
-      active: true
-    };
-    const updated = [...companies, newComp];
-    setCompanies(updated);
-    setCurrentCompany(newComp);
-    setNewCompanyName('');
-  };
-
-  const handleClock = (type: 'IN' | 'OUT') => {
-    if (!pinInput.trim()) return;
-    const emp = employees.find(e => e.pin === pinInput);
-    if (!emp) {
-      setClockMessage({ text: 'PIN incorrect ou employé introuvable.', type: 'error' });
-      setPinInput('');
+  const handleClockAction = (type: 'Arrivée' | 'Départ') => {
+    if (!nameInput.trim()) {
+      alert("Veuillez entrer votre nom et prénom.");
       return;
     }
 
-    const newRecord: AttendanceRecord = {
+    setLoadingGps(true);
+
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude.toFixed(4);
+          const lon = position.coords.longitude.toFixed(4);
+          const gpsStr = `${lat}°, ${lon}°`;
+          saveRecord(nameInput.trim(), type, gpsStr);
+          setLoadingGps(false);
+        },
+        () => {
+          saveRecord(nameInput.trim(), type, "-11.5705°, 27.5510°"); // Fallback Lubumbashi coord
+          setLoadingGps(false);
+        },
+        { timeout: 10000 }
+      );
+    } else {
+      saveRecord(nameInput.trim(), type, "-11.5705°, 27.5510°");
+      setLoadingGps(false);
+    }
+  };
+
+  const saveRecord = (name: string, type: 'Arrivée' | 'Départ', location: string) => {
+    const now = new Date();
+    const timestamp = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const dateStr = now.toLocaleDateString('fr-FR');
+
+    const newRec: AttendanceRecord = {
       id: Date.now().toString(),
-      employeeName: emp.name,
+      name,
       type,
-      timestamp: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-      companyName: currentCompany?.name || 'Entreprise'
+      timestamp,
+      dateStr,
+      location
     };
 
-    setRecords([newRecord, ...records]);
-    setClockMessage({ text: `Pointage ${type === 'IN' ? 'Entrée' : 'Sortie'} réussi pour ${emp.name} !`, type: 'success' });
-    setPinInput('');
+    setRecords([newRec, ...records]);
+    setLastSuccess({ name, type, time: timestamp, gps: location });
+    setNameInput('');
   };
 
-  const handleAddEmployee = (e: React.FormEvent) => {
+  const handleAdminUnlock = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newEmpName || !newEmpPin) return;
-    const emp: Employee = {
-      id: Date.now().toString(),
-      name: newEmpName,
-      pin: newEmpPin,
-      role: newEmpRole || 'Salarié'
-    };
-    setEmployees([...employees, emp]);
-    setNewEmpName('');
-    setNewEmpPin('');
-    setNewEmpRole('');
+    if (adminPassword === 'admin123') {
+      setIsAdminUnlocked(true);
+      setAdminError(false);
+      setAdminPassword('');
+    } else {
+      setAdminError(true);
+    }
   };
 
-  const handleDeleteEmployee = (id: string) => {
-    setEmployees(employees.filter(e => e.id !== id));
-  };
-
-  const exportToExcel = () => {
-    let csvContent = "data:text/csv;charset=utf-8,Employe,Type,Heure,Entreprise\n";
+  const exportCSV = () => {
+    let csv = "Nom,Action,Heure,Date,Coordonnées GPS\n";
     records.forEach(r => {
-      csvContent += `"${r.employeeName}","${r.type}","${r.timestamp}","${r.companyName}"\n`;
+      csv += `"${r.name}","${r.type}","${r.timestamp}","${r.dateStr}","${r.location}"\n`;
     });
-    const encodedUri = encodeURI(csvContent);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
+    link.setAttribute("href", url);
     link.setAttribute("download", "pointages.csv");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-  // Styles CSS intégrés directement pour garantir un rendu parfait à 100% sur Vercel
-  const styles = {
-    container: { minHeight: '100vh', backgroundColor: '#FDFBF7', color: '#1e293b', fontFamily: 'system-ui, -apple-system, sans-serif', padding: '16px', display: 'flex', flexDirection: 'column' as const, justifyContent: 'center', alignItems: 'center' },
-    card: { maxWidth: '420px', width: '100%', backgroundColor: '#ffffff', borderRadius: '20px', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05)', border: '1px solid #f1f1f1', padding: '32px', position: 'relative' as const, overflow: 'hidden' },
-    topBar: { height: '6px', background: 'linear-gradient(to right, #f97316, #f59e0b)', position: 'absolute' as const, top: 0, left: 0, right: 0 },
-    headerTitle: { fontSize: '18px', fontWeight: 'bold', color: '#0f172a', margin: 0 },
-    headerSub: { fontSize: '11px', color: '#64748b', textTransform: 'uppercase' as const, letterSpacing: '0.05em', fontWeight: 600, margin: 0 },
-    badge: { fontSize: '10px', fontWeight: 'bold', color: '#059669', backgroundColor: '#ecfdf5', padding: '4px 10px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '6px' },
-    buttonPrimary: { width: '100%', padding: '14px', backgroundColor: '#0f172a', color: '#ffffff', fontWeight: 600, borderRadius: '12px', border: 'none', cursor: 'pointer', fontSize: '14px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' },
-    input: { width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '14px', outline: 'none', boxSizing: 'border-box' as const, marginBottom: '12px' },
-    companyBtn: { width: '100%', textAlign: 'left' as const, padding: '16px', borderRadius: '14px', border: '1px solid #e2e8f0', backgroundColor: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', transition: 'all 0.2s' },
-    navTab: { flex: 1, padding: '10px', fontSize: '12px', fontWeight: 'bold', borderRadius: '10px', border: 'none', cursor: 'pointer', transition: 'all 0.2s' }
-  };
-
-  if (!currentCompany) {
-    return (
-      <div style={styles.container}>
-        <div style={styles.card}>
-          <div style={styles.topBar}></div>
-          
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'between', marginBottom: '24px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ width: '40px', height: '40px', borderRadius: '12px', backgroundColor: '#fff7ed', color: '#ea580c', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>🕒</div>
-              <div>
-                <h1 style={styles.headerTitle}>Pointage RH</h1>
-                <p style={styles.headerSub}>Présence, sans détour</p>
-              </div>
-            </div>
-            <span style={styles.badge}>● ESPACE SÉCURISÉ</span>
-          </div>
-
-          <div style={{ marginBottom: '24px' }}>
-            <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: '#0f172a', marginBottom: '8px' }}>Choisissez votre entreprise.</h2>
-            <p style={{ fontSize: '13px', color: '#64748b', lineHeight: '1.5', margin: 0 }}>
-              Le pointage reste immédiat pour les salariés. Les données de présence sont ensuite réservées à l'administrateur.
-            </p>
-          </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', color: '#94a3b8', display: 'block', marginBottom: '8px' }}>Entreprises existantes</label>
-            {companies.map(comp => (
-              <button
-                key={comp.id}
-                onClick={() => setCurrentCompany(comp)}
-                style={styles.companyFileButton || styles.companyBtn}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '8px', backgroundColor: '#0f172a', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '13px' }}>
-                    {comp.name.charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <p style={{ fontWeight: 'bold', color: '#0f172a', margin: 0, fontSize: '14px' }}>{comp.name}</p>
-                    <span style={{ fontSize: '11px', color: '#059669', fontWeight: 600 }}>ENTREPRISE ACTIVE</span>
-                  </div>
-                </div>
-                <span style={{ color: '#94a3b8', fontWeight: 'bold' }}>➔</span>
-              </button>
-            ))}
-          </div>
-
-          <form onSubmit={handleCreateCompany} style={{ borderTop: '1px solid #f1f1f1', paddingTop: '20px' }}>
-            <label style={{ fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', color: '#94a3b8', display: 'block', marginBottom: '8px' }}>Créer une entreprise</label>
-            <input
-              type="text"
-              placeholder="Ex. Atelier des Rives"
-              value={newCompanyName}
-              onChange={e => setNewCompanyName(e.target.value)}
-              style={styles.input}
-            />
-            <button type="submit" style={styles.buttonPrimary}>
-              + Créer l'entreprise
-            </button>
-          </form>
-
-          <div style={{ marginTop: '24px', textAlign: 'center' }}>
-            <p style={{ fontSize: '11px', color: '#94a3b8', margin: '4px 0' }}>🛡️ Vos informations restent confidentielles</p>
-            <p style={{ fontSize: '10px', color: '#cbd5e1', margin: 0 }}>Une entreprise, un espace fiable</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#FDFBF7', color: '#1e293b', fontFamily: 'system-ui, sans-serif' }}>
-      <header style={{ backgroundColor: '#ffffff', borderBottom: '1px solid #e2e8f0', padding: '12px 16px', position: 'sticky', top: 0, zIndex: 30 }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#FDFBF7', color: '#1E293B', fontFamily: 'system-ui, sans-serif', paddingBottom: '40px' }}>
+      
+      {/* Header */}
+      <div style={{ maxWidth: '480px', margin: '0 auto', padding: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: '10px', backgroundColor: '#ea580c', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>🕒</div>
+            <div style={{ width: '38px', height: '38px', borderRadius: '10px', backgroundColor: '#0F4C5C', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>⏰</div>
             <div>
-              <h1 style={{ fontSize: '15px', fontWeight: 'bold', margin: 0 }}>Pointage RH</h1>
-              <span style={{ fontSize: '11px', color: '#ea580c', fontWeight: 600 }}>{currentCompany.name}</span>
+              <h1 style={{ fontSize: '16px', fontWeight: 'bold', margin: 0, color: '#0F2M3A' }}>Pointage RH</h1>
+              <span style={{ fontSize: '11px', color: '#64748B' }}>PRÉSENCE, SANS DÉTOUR</span>
             </div>
           </div>
-          <button
-            onClick={() => setCurrentCompany(null)}
-            style={{ fontSize: '11px', fontWeight: 'bold', color: '#475569', backgroundColor: '#f1f5f9', border: 'none', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer' }}
-          >
-            ← Changer d'entreprise
-          </button>
-        </div>
-      </header>
-
-      <div style={{ maxWidth: '600px', margin: '20px auto', padding: '0 16px' }}>
-        <div style={{ display: 'flex', backgroundColor: '#e2e8f0', padding: '4px', borderRadius: '12px', marginBottom: '24px' }}>
-          <button
-            onClick={() => setActiveTab('dashboard')}
-            style={{ ...styles.navTab, backgroundColor: activeTab === 'dashboard' ? '#fff' : 'transparent', color: activeTab === 'dashboard' ? '#0f172a' : '#64748b', boxShadow: activeTab === 'dashboard' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none' }}
-          >
-            Tableau de bord
-          </button>
-          <button
-            onClick={() => setActiveTab('clock')}
-            style={{ ...styles.navTab, backgroundColor: activeTab === 'clock' ? '#fff' : 'transparent', color: activeTab === 'clock' ? '#0f172a' : '#64748b', boxShadow: activeTab === 'clock' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none' }}
-          >
-            Borne de Pointage
-          </button>
-          <button
-            onClick={() => setActiveTab('employees')}
-            style={{ ...styles.navTab, backgroundColor: activeTab === 'employees' ? '#fff' : 'transparent', color: activeTab === 'employees' ? '#0f172a' : '#64748b', boxShadow: activeTab === 'employees' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none' }}
-          >
-            Employés ({employees.length})
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', backgroundColor: '#E2E8F0', padding: '4px 10px', borderRadius: '20px', fontWeight: 600 }}>
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#059669' }}></span>
+            LOCAL & SÉCURISÉ
+          </div>
         </div>
 
-        {activeTab === 'dashboard' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-              <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
-                <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#94a3b8', textTransform: 'uppercase' }}>Total Employés</span>
-                <p style={{ fontSize: '28px', fontWeight: 'extrabold', color: '#0f172a', margin: '8px 0 0 0' }}>{employees.length}</p>
-              </div>
-              <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
-                <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#94a3b8', textTransform: 'uppercase' }}>Pointages du jour</span>
-                <p style={{ fontSize: '28px', fontWeight: 'extrabold', color: '#0f172a', margin: '8px 0 0 0' }}>{records.length}</p>
-              </div>
-            </div>
+        {/* Company bar */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', fontSize: '13px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'bold' }}>
+            <span>🏢</span>
+            {isEditingCompany ? (
+              <input 
+                type="text" 
+                value={tempCompanyName} 
+                onChange={e => setTempCompanyName(e.target.value)}
+                onBlur={() => { setCompanyName(tempCompanyName); setIsEditingCompany(false); }}
+                autoFocus
+                style={{ padding: '2px 6px', fontSize: '13px', borderRadius: '4px', border: '1px solid #cbd5e1' }}
+              />
+            ) : (
+              <span>{companyName}</span>
+            )}
+          </div>
+          <button 
+            onClick={() => setIsEditingCompany(!isEditingCompany)} 
+            style={{ background: 'none', border: 'none', color: '#0F4C5C', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
+          >
+            Changer
+          </button>
+        </div>
 
-            <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <h3 style={{ fontSize: '15px', fontWeight: 'bold', margin: 0 }}>Historique Récent</h3>
-                <button onClick={exportToExcel} style={{ padding: '8px 14px', backgroundColor: '#059669', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
-                  📊 Exporter Excel
-                </button>
-              </div>
-              {records.length === 0 ? (
-                <p style={{ fontSize: '13px', color: '#94a3b8', textAlign: 'center', padding: '30px 0' }}>Aucun pointage enregistré.</p>
-              ) : (
-                records.map(r => (
-                  <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #f1f5f9', fontSize: '13px' }}>
-                    <span style={{ fontWeight: 'bold' }}>{r.employeeName}</span>
-                    <span style={{ color: r.type === 'IN' ? '#059669' : '#d97706', fontWeight: 'bold' }}>{r.type === 'IN' ? 'Entrée' : 'Sortie'}</span>
-                    <span style={{ color: '#64748b' }}>{r.timestamp}</span>
-                  </div>
-                ))
-              )}
+        {/* Hero Card */}
+        <div style={{ backgroundColor: '#0F2M3A', color: '#fff', borderRadius: '20px', padding: '24px', marginBottom: '20px', position: 'relative', overflow: 'hidden' }}>
+          <p style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', opacity: 0.8, marginBottom: '8px' }}>Bonjour, vous êtes au bon endroit</p>
+          <h2 style={{ fontSize: '22px', fontWeight: 'bold', margin: '0 0 12px 0', lineHeight: '1.2' }}>Commencer sa journée, <span style={{ color: '#E29578' }}>simplement.</span></h2>
+          <p style={{ fontSize: '12px', opacity: 0.8, margin: '0 0 16px 0', lineHeight: '1.4' }}>Un pointage clair, en quelques secondes. Votre position confirme votre présence et reste attachée à ce seul enregistrement.</p>
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.15)', paddingTop: '12px', fontSize: '11px', opacity: 0.7 }}>
+            UN GESTE, UNE TRACE FIABLE
+          </div>
+        </div>
+
+        {/* Success Banner if just clocked */}
+        {lastSuccess && (
+          <div style={{ backgroundColor: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '16px', padding: '16px', marginBottom: '20px' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: '#166534', margin: '0 0 6px 0' }}>{lastSuccess.type} pointée</h3>
+            <p style={{ fontSize: '12px', color: '#15803D', margin: '0 0 12px 0' }}>C'est enregistré pour <b>{lastSuccess.name}</b>. La confirmation est bien arrivée dans l'espace de votre entreprise.</p>
+            <div style={{ backgroundColor: '#fff', padding: '10px 12px', borderRadius: '8px', fontSize: '12px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ color: '#64748B' }}>HEURE DU POINTAGE</span>
+              <span style={{ fontWeight: 'bold' }}>{lastSuccess.time}</span>
             </div>
+            <div style={{ backgroundColor: '#fff', padding: '10px 12px', borderRadius: '8px', fontSize: '12px', marginBottom: '12px', display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ color: '#64748B' }}>POSITION CONFIRMÉE</span>
+              <span style={{ fontFamily: 'monospace', fontWeight: 'bold' }}>{lastSuccess.gps}</span>
+            </div>
+            <button 
+              onClick={() => setLastSuccess(null)}
+              style={{ width: '100%', padding: '10px', backgroundColor: '#E2E8F0', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', color: '#334155' }}
+            >
+              🔄 Pointers à nouveau
+            </button>
           </div>
         )}
 
-        {activeTab === 'clock' && (
-          <div style={{ backgroundColor: '#fff', padding: '24px', borderRadius: '16px', border: '1px solid #e2e8f0', textAlign: 'center' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: 'bold', margin: '0 0 8px 0' }}>Borne de Pointage</h3>
-            <p style={{ fontSize: '12px', color: '#64748b', marginBottom: '20px' }}>Entrez votre code PIN pour pointer</p>
+        {/* Clock Form */}
+        {!lastSuccess && (
+          <div style={{ backgroundColor: '#ffffff', borderRadius: '20px', padding: '20px', border: '1px solid #E2E8F0', marginBottom: '20px', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
+            <p style={{ fontSize: '12px', color: '#475569', marginBottom: '16px', lineHeight: '1.4' }}>
+              Indiquez votre nom, puis choisissez votre arrivée ou votre départ. L'heure et votre position seront relevées pour {companyName}.
+            </p>
 
-            {clockMessage && (
-              <div style={{ padding: '10px', borderRadius: '10px', fontSize: '12px', fontWeight: 'bold', marginBottom: '16px', backgroundColor: clockMessage.type === 'success' ? '#ecfdf5' : '#fef2f2', color: clockMessage.type === 'success' ? '#059669' : '#dc2626' }}>
-                {clockMessage.text}
+            <div style={{ marginBottom: '14px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#1E293B' }}>Nom / Prénom</label>
+                <span style={{ fontSize: '11px', color: '#DC2626' }}>Requis</span>
+              </div>
+              <input 
+                type="text" 
+                placeholder="Ex. Camille Martin"
+                value={nameInput}
+                onChange={e => setNameInput(e.target.value)}
+                style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #CBD5E1', fontSize: '14px', boxSizing: 'border-box', backgroundColor: '#F8FAFC', outline: 'none' }}
+              />
+            </div>
+
+            {loadingGps ? (
+              <div style={{ textAlign: 'center', padding: '16px', fontSize: '13px', fontWeight: 'bold', color: '#D97706' }}>
+                📡 Acquisition GPS en cours...
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <button 
+                  onClick={() => handleClockAction('Arrivée')}
+                  style={{ width: '100%', padding: '15px', backgroundColor: '#1E463E', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                >
+                  → Pointer l'arrivée
+                </button>
+                <button 
+                  onClick={() => handleClockAction('Départ')}
+                  style={{ width: '100%', padding: '15px', backgroundColor: '#FCEFD2', color: '#78350F', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                >
+                  ← Pointer le départ
+                </button>
               </div>
             )}
 
-            <input
-              type="password"
-              maxLength={6}
-              placeholder="••••"
-              value={pinInput}
-              onChange={e => setPinInput(e.target.value)}
-              style={{ width: '100%', maxWidth: '200px', textAlign: 'center', fontSize: '24px', letterSpacing: '8px', padding: '12px', borderRadius: '12px', border: '1px solid #cbd5e1', margin: '0 auto 20px auto', display: 'block', outline: 'none' }}
-            />
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-              <button onClick={() => handleClock('IN')} style={{ padding: '14px', backgroundColor: '#059669', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>
-                Entrée (IN)
-              </button>
-              <button onClick={() => handleClock('OUT')} style={{ padding: '14px', backgroundColor: '#0f172a', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>
-                Sortie (OUT)
-              </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#64748B', marginTop: '14px' }}>
+              <span>🔒</span>
+              <span>La position est demandée uniquement au moment du clic et est enregistrée avec votre pointage dans l'historique.</span>
             </div>
           </div>
         )}
 
-        {activeTab === 'employees' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
-              <h3 style={{ fontSize: '15px', fontWeight: 'bold', margin: '0 0 12px 0' }}>Ajouter un employé</h3>
-              <form onSubmit={handleAddEmployee} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <input type="text" placeholder="Nom complet" value={newEmpName} onChange={e => setNewEmpName(e.target.value)} style={styles.input} />
-                <input type="text" placeholder="Code PIN (ex: 1234)" value={newEmpPin} onChange={e => setNewEmpPin(e.target.value)} style={styles.input} />
-                <button type="submit" style={{ padding: '12px', backgroundColor: '#ea580c', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>+ Ajouter l'employé</button>
-              </form>
-            </div>
+        {/* Administrator Section */}
+        <div style={{ backgroundColor: '#ffffff', borderRadius: '20px', padding: '20px', border: '1px solid #E2E8F0', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
+          <div style={{ marginBottom: '14px' }}>
+            <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#94A3B8', letterSpacing: '1px' }}>LA JOURNÉE, EN UN COUP D'ŒIL</span>
+            <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: '#0F2M3A', margin: '2px 0 0 0' }}>Données administrateur</h3>
+          </div>
 
-            <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
-              <h3 style={{ fontSize: '15px', fontWeight: 'bold', margin: '0 0 12px 0' }}>Salariés enregistrés</h3>
-              {employees.map(emp => (
-                <div key={emp.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #f1f5f9' }}>
-                  <div>
-                    <p style={{ fontWeight: 'bold', margin: 0, fontSize: '14px' }}>{emp.name}</p>
-                    <span style={{ fontSize: '11px', color: '#94a3b8' }}>Rôle : {emp.role}</span>
-                  </div>
-                  <button onClick={() => handleDeleteEmployee(emp.id)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '16px' }}>🗑️</button>
+          {!isAdminUnlocked ? (
+            <div style={{ backgroundColor: '#F8FAFC', padding: '16px', borderRadius: '14px', border: '1px solid #E2E8F0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                <span style={{ fontSize: '18px' }}>🔒</span>
+                <div>
+                  <h4 style={{ fontSize: '13px', fontWeight: 'bold', margin: 0 }}>Historique réservé</h4>
+                  <p style={{ fontSize: '11px', color: '#64748B', margin: 0 }}>Déverrouillez l'espace administrateur pour consulter les présences.</p>
                 </div>
-              ))}
+              </div>
+
+              <form onSubmit={handleAdminUnlock} style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
+                <input 
+                  type="password" 
+                  placeholder="Mot de passe (admin123)"
+                  value={adminPassword}
+                  onChange={e => setAdminPassword(e.target.value)}
+                  style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '13px', boxSizing: 'border-box' }}
+                />
+                {adminError && <span style={{ fontSize: '11px', color: '#DC2626' }}>Mot de passe incorrect (essayez admin123)</span>}
+                <button 
+                  type="submit"
+                  style={{ padding: '12px', backgroundColor: '#1E463E', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '13px', cursor: 'pointer' }}
+                >
+                  🔒 Déverrouiller
+                </button>
+              </form>
+              <span style={{ fontSize: '10px', color: '#94A3B8', display: 'block', marginTop: '8px' }}>Mot de passe initial : admin123</span>
             </div>
-          </div>
-        )}
+          ) : (
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#F1F5F9', padding: '12px', borderRadius: '10px', marginBottom: '14px' }}>
+                <div>
+                  <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#059669', display: 'block' }}>● SESSION ADMINISTRATEUR ACTIVE</span>
+                  <span style={{ fontSize: '12px', color: '#475569' }}>{records.length} lignes enregistrées</span>
+                </div>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <button onClick={exportCSV} style={{ padding: '6px 10px', backgroundColor: '#0F4C5C', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}>CSV</button>
+                  <button onClick={() => setIsAdminUnlocked(false)} style={{ padding: '6px 10px', backgroundColor: '#E2E8F0', border: 'none', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}>Verrouiller</button>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '350px', overflowY: 'auto' }}>
+                {records.map(r => (
+                  <div key={r.id} style={{ backgroundColor: '#F8FAFC', padding: '12px', borderRadius: '10px', border: '1px solid #E2E8F0', fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}>
+                      <span>{r.name}</span>
+                      <span style={{ color: r.type === 'Arrivée' ? '#059669' : '#D97706' }}>{r.type}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748B', fontSize: '11px' }}>
+                      <span>🕒 {r.timestamp} ({r.dateStr})</span>
+                      <span style={{ fontFamily: 'monospace' }}>📍 {r.location}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
       </div>
     </div>
   );
-      }
-        
+        }
+    
