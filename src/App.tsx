@@ -16,7 +16,7 @@ export default function App() {
 
   const [nameInput, setNameInput] = useState('');
   const [records, setRecords] = useState<AttendanceRecord[]>(() => {
-    const saved = localStorage.getItem('prh_records_v6');
+    const saved = localStorage.getItem('prh_records_v7');
     return saved ? JSON.parse(saved) : [
       { id: '1', name: 'Moïse Muluku', type: 'Arrivée', timestamp: '21:47:41', dateStr: '10/09/2026', location: '-11.5705°, 27.5510°' }
     ];
@@ -31,7 +31,7 @@ export default function App() {
   const [adminError, setAdminError] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem('prh_records_v6', JSON.stringify(records));
+    localStorage.setItem('prh_records_v7', JSON.stringify(records));
   }, [records]);
 
   const handleClockAction = (type: 'Arrivée' | 'Départ') => {
@@ -153,12 +153,12 @@ export default function App() {
           </button>
         </div>
 
-        {/* HERO CARD - Fond ultra-forcé anti-bug CSS global */}
-        <div style={{ background: '#0A2E25', backgroundColor: '#0A2E25', color: '#FFFFFF', borderRadius: '20px', padding: '24px', marginBottom: '20px', opacity: 1 }}>
-          <p style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: '#A3E635', margin: '0 0 8px 0', fontWeight: 'bold' }}>Bonjour, vous êtes au bon endroit</p>
-          <h2 style={{ fontSize: '22px', fontWeight: 'bold', margin: '0 0 12px 0', lineHeight: '1.2', color: '#FFFFFF' }}>Commencer sa journée, <span style={{ color: '#FDE047' }}>simplement.</span></h2>
-          <p style={{ fontSize: '12px', color: '#E2E8F0', margin: '0 0 16px 0', lineHeight: '1.4' }}>Un pointage clair, en quelques secondes. Votre position confirme votre présence et reste attachée à ce seul enregistrement.</p>
-          <div style={{ borderTop: '1px solid rgba(255,255,255,0.2)', paddingTop: '12px', fontSize: '11px', color: '#CBD5E1', letterSpacing: '0.5px', fontWeight: 'bold' }}>
+        {/* HERO CARD - Vrai Bleu Nuit */}
+        <div style={{ background: '#0F2M3A', backgroundColor: '#0F2M3A', color: '#FFFFFF', borderRadius: '20px', padding: '24px', marginBottom: '20px', opacity: 1 }}>
+          <p style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: '#94A3B8', margin: '0 0 8px 0', fontWeight: 'bold' }}>Bonjour, vous êtes au bon endroit</p>
+          <h2 style={{ fontSize: '22px', fontWeight: 'bold', margin: '0 0 12px 0', lineHeight: '1.2', color: '#FFFFFF' }}>Commencer sa journée, <span style={{ color: '#E29578' }}>simplement.</span></h2>
+          <p style={{ fontSize: '12px', color: '#CBD5E1', margin: '0 0 16px 0', lineHeight: '1.4' }}>Un pointage clair, en quelques secondes. Votre position confirme votre présence et reste attachée à ce seul enregistrement.</p>
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.2)', paddingTop: '12px', fontSize: '11px', color: '#94A3B8', letterSpacing: '0.5px', fontWeight: 'bold' }}>
             UN GESTE, UNE TRACE FIABLE
           </div>
         </div>
@@ -270,5 +270,5 @@ export default function App() {
       </div>
     </div>
   );
-    }
-    
+}
+  
