@@ -16,7 +16,7 @@ export default function App() {
 
   const [nameInput, setNameInput] = useState('');
   const [records, setRecords] = useState<AttendanceRecord[]>(() => {
-    const saved = localStorage.getItem('prh_records_v8');
+    const saved = localStorage.getItem('prh_records_v9');
     return saved ? JSON.parse(saved) : [
       { id: '1', name: 'Moïse Muluku', type: 'Arrivée', timestamp: '21:47:41', dateStr: '10/09/2026', location: '-11.5705°, 27.5510°' }
     ];
@@ -24,14 +24,26 @@ export default function App() {
 
   const [lastSuccess, setLastSuccess] = useState<{ name: string; type: string; time: string; gps: string } | null>(null);
   const [loadingGps, setLoadingGps] = useState(false);
+  const [currentTime, setCurrentTime] = useState('');
 
   // Admin state
   const [isAdminUnlocked, setIsAdminUnlocked] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
   const [adminError, setAdminError] = useState(false);
 
+  // Live clock
   useEffect(() => {
-    localStorage.setItem('prh_records_v8', JSON.stringify(records));
+    const updateClock = () => {
+      const now = new Date();
+      setCurrentTime(now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+    };
+    updateClock();
+    const timer = setInterval(updateClock, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('prh_records_v9', JSON.stringify(records));
   }, [records]);
 
   const handleClockAction = (type: 'Arrivée' | 'Départ') => {
@@ -93,7 +105,7 @@ export default function App() {
   };
 
   const exportCSV = () => {
-    let csv = "Nom,Action,Heure,Date,Coordonnées GPS\n";
+    let csv = "Nom / Prénom,Action,Heure,Date,Coordonnées GPS\n";
     records.forEach(r => {
       csv += `"${r.name}","${r.type}","${r.timestamp}","${r.dateStr}","${r.location}"\n`;
     });
@@ -101,7 +113,7 @@ export default function App() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", "pointages.csv");
+    link.setAttribute("download", `pointages_${companyName.replace(/\s+/g, '_')}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -113,6 +125,7 @@ export default function App() {
     <div style={{ minHeight: '100vh', backgroundColor: '#FDFBF7', color: '#1E293B', fontFamily: 'system-ui, sans-serif', paddingBottom: '40px' }}>
       
       <div style={{ maxWidth: '480px', margin: '0 auto', padding: '16px' }}>
+        
         {/* Top Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -153,12 +166,12 @@ export default function App() {
           </button>
         </div>
 
-        {/* HERO CARD - Fond Noir Profond Garanti */}
-        <div style={{ background: '#0B0F19', backgroundColor: '#0B0F19', color: '#FFFFFF', borderRadius: '20px', padding: '24px', marginBottom: '20px' }}>
+        {/* HERO CARD - Bleu Nuit Élégant et Solide */}
+        <div style={{ backgroundColor: '#132238', color: '#FFFFFF', borderRadius: '20px', padding: '24px', marginBottom: '20px', boxShadow: '0 10px 25px rgba(19, 34, 56, 0.2)' }}>
           <p style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: '#94A3B8', margin: '0 0 8px 0', fontWeight: 'bold' }}>Bonjour, vous êtes au bon endroit</p>
           <h2 style={{ fontSize: '22px', fontWeight: 'bold', margin: '0 0 12px 0', lineHeight: '1.2', color: '#FFFFFF' }}>Commencer sa journée, <span style={{ color: '#E29578' }}>simplement.</span></h2>
           <p style={{ fontSize: '12px', color: '#CBD5E1', margin: '0 0 16px 0', lineHeight: '1.4' }}>Un pointage clair, en quelques secondes. Votre position confirme votre présence et reste attachée à ce seul enregistrement.</p>
-          <div style={{ borderTop: '1px solid rgba(255,255,255,0.2)', paddingTop: '12px', fontSize: '11px', color: '#94A3B8', letterSpacing: '0.5px', fontWeight: 'bold' }}>
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.15)', paddingTop: '12px', fontSize: '11px', color: '#94A3B8', letterSpacing: '0.5px', fontWeight: 'bold' }}>
             UN GESTE, UNE TRACE FIABLE
           </div>
         </div>
@@ -167,7 +180,11 @@ export default function App() {
         {lastSuccess ? (
           <div style={{ backgroundColor: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '20px', padding: '20px', marginBottom: '20px' }}>
             <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#166534', margin: '0 0 8px 0' }}>{lastSuccess.type} pointée</h3>
-            <p style={{ fontSize: '13px', color: '#15803D', margin: '0 0 16px 0' }}>C'est enregistré pour <b>{lastSuccess.name}</b>.</p>
+            <p style={{ fontSize: '13px', color: '#15803D', margin: '0 0 12px 0' }}>C'est enregistré pour <b>{lastSuccess.name}</b>.</p>
+            <div style={{ backgroundColor: '#fff', padding: '12px', borderRadius: '10px', fontSize: '12px', marginBottom: '16px', color: '#1E293B', border: '1px solid #DCFCE7' }}>
+              <div>🕒 Heure : <b>{lastSuccess.time}</b></div>
+              <div>📍 GPS : <b>{lastSuccess.gps}</b></div>
+            </div>
             <button 
               onClick={() => setLastSuccess(null)}
               style={{ width: '100%', padding: '14px', backgroundColor: '#166534', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}
@@ -179,15 +196,19 @@ export default function App() {
           <div style={{ backgroundColor: '#ffffff', borderRadius: '20px', padding: '20px', border: '1px solid #E2E8F0', marginBottom: '20px', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
               <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#94A3B8', textTransform: 'uppercase' }}>Aujourd'hui</span>
-              <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#0F2M3A' }}>{currentDateFormatted}</span>
+              <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#0F2M3A' }}>{currentTime}</span>
             </div>
+            <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#0F2M3A', marginBottom: '16px' }}>{currentDateFormatted}</div>
 
             <p style={{ fontSize: '12px', color: '#475569', marginBottom: '16px', lineHeight: '1.4' }}>
-              Indiquez votre nom, puis choisissez votre arrivée ou votre départ.
+              Indiquez votre nom, puis choisissez votre arrivée ou votre départ. L'heure et votre position seront relevées pour {companyName}.
             </p>
 
             <div style={{ marginBottom: '14px' }}>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: '#1E293B', marginBottom: '6px' }}>Nom / Prénom</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#1E293B' }}>Nom / Prénom</label>
+                <span style={{ fontSize: '11px', color: '#DC2626', fontWeight: 600 }}>Requis</span>
+              </div>
               <input 
                 type="text" 
                 placeholder="Ex. Moïse Muluku"
@@ -217,6 +238,9 @@ export default function App() {
                 </button>
               </div>
             )}
+            <div style={{ marginTop: '14px', fontSize: '11px', color: '#64748B', textAlign: 'center' }}>
+              🔒 La position est demandée uniquement au moment du clic.
+            </div>
           </div>
         )}
 
@@ -229,15 +253,19 @@ export default function App() {
 
           {!isAdminUnlocked ? (
             <div style={{ backgroundColor: '#F8FAFC', padding: '16px', borderRadius: '14px', border: '1px solid #E2E8F0' }}>
+              <div style={{ marginBottom: '12px' }}>
+                <div style={{ fontWeight: 'bold', fontSize: '13px', color: '#0F2M3A' }}>Historique réservé</div>
+                <div style={{ fontSize: '11px', color: '#64748B' }}>Déverrouillez l'espace administrateur pour consulter les présences et exporter les données de {companyName}.</div>
+              </div>
               <form onSubmit={handleAdminUnlock} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <input 
                   type="password" 
-                  placeholder="Mot de passe (admin123)"
+                  placeholder="Votre mot de passe"
                   value={adminPassword}
                   onChange={e => setAdminPassword(e.target.value)}
                   style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '13px', boxSizing: 'border-box' }}
                 />
-                {adminError && <span style={{ fontSize: '11px', color: '#DC2626' }}>Mot de passe incorrect (admin123)</span>}
+                {adminError && <span style={{ fontSize: '11px', color: '#DC2626' }}>Mot de passe incorrect</span>}
                 <button 
                   type="submit"
                   style={{ padding: '12px', backgroundColor: '#1E463E', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '13px', cursor: 'pointer' }}
@@ -245,21 +273,36 @@ export default function App() {
                   🔒 Déverrouiller
                 </button>
               </form>
+              <div style={{ fontSize: '10px', color: '#94A3B8', marginTop: '8px' }}>
+                🔑 Mot de passe initial de l'entreprise : <b>admin123</b>
+              </div>
             </div>
           ) : (
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#F1F5F9', padding: '12px', borderRadius: '10px', marginBottom: '14px' }}>
-                <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#059669' }}>● ADMIN ACTIF ({records.length})</span>
+                <div>
+                  <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#059669' }}>● SESSION ADMINISTRATEUR ACTIVE</span>
+                  <div style={{ fontSize: '10px', color: '#64748B' }}>{records.length} enregistrements au total</div>
+                </div>
                 <div style={{ display: 'flex', gap: '6px' }}>
-                  <button onClick={exportCSV} style={{ padding: '6px 10px', backgroundColor: '#0F4C5C', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}>CSV</button>
-                  <button onClick={() => setIsAdminUnlocked(false)} style={{ padding: '6px 10px', backgroundColor: '#E2E8F0', border: 'none', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}>Fermer</button>
+                  <button onClick={exportCSV} style={{ padding: '8px 12px', backgroundColor: '#0F4C5C', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}>CSV / Excel</button>
+                  <button onClick={() => setIsAdminUnlocked(false)} style={{ padding: '8px 12px', backgroundColor: '#E2E8F0', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}>Verrouiller</button>
                 </div>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '250px', overflowY: 'auto' }}>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '280px', overflowY: 'auto' }}>
                 {records.map(r => (
-                  <div key={r.id} style={{ backgroundColor: '#F8FAFC', padding: '10px', borderRadius: '8px', border: '1px solid #E2E8F0', fontSize: '12px', display: 'flex', justifyContent: 'space-between' }}>
-                    <span><b>{r.name}</b> ({r.type})</span>
-                    <span style={{ color: '#64748B' }}>{r.timestamp}</span>
+                  <div key={r.id} style={{ backgroundColor: '#F8FAFC', padding: '12px', borderRadius: '10px', border: '1px solid #E2E8F0', fontSize: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <div style={{ fontWeight: 'bold', color: '#0F2M3A' }}>{r.name}</div>
+                      <div style={{ fontSize: '10px', color: '#64748B' }}>📍 {r.location}</div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', backgroundColor: r.type === 'Arrivée' ? '#DCFCE7' : '#FEF3C7', color: r.type === 'Arrivée' ? '#166534' : '#92400E' }}>
+                        {r.type}
+                      </span>
+                      <div style={{ fontSize: '11px', color: '#475569', marginTop: '2px' }}>{r.timestamp}</div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -267,8 +310,14 @@ export default function App() {
           )}
         </div>
 
+        {/* Footer info */}
+        <div style={{ marginTop: '20px', fontSize: '11px', color: '#64748B', display: 'flex', flexDirection: 'column', gap: '4px', textAlign: 'center' }}>
+          <div>🛡️ Vos informations restent confidentielles</div>
+          <div>⚡ Historique sauvegardé durablement sur votre appareil</div>
+        </div>
+
       </div>
     </div>
   );
-         }
-    
+      }
+      
