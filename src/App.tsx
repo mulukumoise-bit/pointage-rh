@@ -1,8 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Building2, Users, Clock, FileSpreadsheet, Plus, Shield, 
-  CheckCircle, AlertCircle, LogOut, Search, Trash2, Key, ChevronRight 
-} from 'lucide-react';
 
 interface Company {
   id: string;
@@ -39,7 +35,6 @@ export default function App() {
   const [newCompanyName, setNewCompanyName] = useState('');
   const [activeTab, setActiveTab] = useState<'dashboard' | 'clock' | 'employees'>('dashboard');
 
-  // Employees & Attendance states
   const [employees, setEmployees] = useState<Employee[]>([
     { id: '1', name: 'Jean Dupont', pin: '1234', role: 'Développeur' },
     { id: '2', name: 'Marie Curie', pin: '5678', role: 'RH' }
@@ -49,7 +44,6 @@ export default function App() {
   const [pinInput, setPinInput] = useState('');
   const [clockMessage, setClockMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
-  // New Employee Form
   const [newEmpName, setNewEmpName] = useState('');
   const [newEmpPin, setNewEmpPin] = useState('');
   const [newEmpRole, setNewEmpRole] = useState('');
@@ -131,213 +125,173 @@ export default function App() {
     document.body.removeChild(link);
   };
 
-  // 1. Écran de sélection d'entreprise (si aucune entreprise choisie)
+  // Styles CSS intégrés directement pour garantir un rendu parfait à 100% sur Vercel
+  const styles = {
+    container: { minHeight: '100vh', backgroundColor: '#FDFBF7', color: '#1e293b', fontFamily: 'system-ui, -apple-system, sans-serif', padding: '16px', display: 'flex', flexDirection: 'column' as const, justifyContent: 'center', alignItems: 'center' },
+    card: { maxWidth: '420px', width: '100%', backgroundColor: '#ffffff', borderRadius: '20px', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05)', border: '1px solid #f1f1f1', padding: '32px', position: 'relative' as const, overflow: 'hidden' },
+    topBar: { height: '6px', background: 'linear-gradient(to right, #f97316, #f59e0b)', position: 'absolute' as const, top: 0, left: 0, right: 0 },
+    headerTitle: { fontSize: '18px', fontWeight: 'bold', color: '#0f172a', margin: 0 },
+    headerSub: { fontSize: '11px', color: '#64748b', textTransform: 'uppercase' as const, letterSpacing: '0.05em', fontWeight: 600, margin: 0 },
+    badge: { fontSize: '10px', fontWeight: 'bold', color: '#059669', backgroundColor: '#ecfdf5', padding: '4px 10px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '6px' },
+    buttonPrimary: { width: '100%', padding: '14px', backgroundColor: '#0f172a', color: '#ffffff', fontWeight: 600, borderRadius: '12px', border: 'none', cursor: 'pointer', fontSize: '14px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' },
+    input: { width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '14px', outline: 'none', boxSizing: 'border-box' as const, marginBottom: '12px' },
+    companyBtn: { width: '100%', textAlign: 'left' as const, padding: '16px', borderRadius: '14px', border: '1px solid #e2e8f0', backgroundColor: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', transition: 'all 0.2s' },
+    navTab: { flex: 1, padding: '10px', fontSize: '12px', fontWeight: 'bold', borderRadius: '10px', border: 'none', cursor: 'pointer', transition: 'all 0.2s' }
+  };
+
   if (!currentCompany) {
     return (
-      <div className="min-h-screen bg-[#FDFBF7] text-slate-800 flex flex-col justify-center items-center p-4 font-sans">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl border border-stone-100 p-8 space-y-6 relative overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-orange-500 to-amber-500"></div>
+      <div style={styles.container}>
+        <div style={styles.card}>
+          <div style={styles.topBar}></div>
           
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center font-bold shadow-sm">
-                <Clock className="w-5 h-5" />
-              </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'between', marginBottom: '24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '12px', backgroundColor: '#fff7ed', color: '#ea580c', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>🕒</div>
               <div>
-                <h1 className="text-lg font-bold tracking-tight text-slate-900">Pointage RH</h1>
-                <p className="text-xs text-slate-500 uppercase tracking-wider font-medium">Présence, sans détour</p>
+                <h1 style={styles.headerTitle}>Pointage RH</h1>
+                <p style={styles.headerSub}>Présence, sans détour</p>
               </div>
             </div>
-            <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              ESPACE SÉCURISÉ
-            </span>
+            <span style={styles.badge}>● ESPACE SÉCURISÉ</span>
           </div>
 
-          <div className="space-y-2">
-            <h2 className="text-xl font-bold text-slate-900">Choisissez votre entreprise.</h2>
-            <p className="text-sm text-slate-500 leading-relaxed">
-              Le pointage reste immédiat pour les salariés. Les données de présence sont ensuite réservées à l'administrateur de l'entreprise.
+          <div style={{ marginBottom: '24px' }}>
+            <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: '#0f172a', marginBottom: '8px' }}>Choisissez votre entreprise.</h2>
+            <p style={{ fontSize: '13px', color: '#64748b', lineHeight: '1.5', margin: 0 }}>
+              Le pointage reste immédiat pour les salariés. Les données de présence sont ensuite réservées à l'administrateur.
             </p>
           </div>
 
-          <div className="space-y-3 pt-2">
-            <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">Entreprises existantes</label>
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', color: '#94a3b8', display: 'block', marginBottom: '8px' }}>Entreprises existantes</label>
             {companies.map(comp => (
               <button
                 key={comp.id}
                 onClick={() => setCurrentCompany(comp)}
-                className="w-full text-left p-4 rounded-xl border border-stone-200 hover:border-orange-500 hover:bg-orange-50/30 transition-all flex items-center justify-between group shadow-sm"
+                style={styles.companyFileButton || styles.companyBtn}
               >
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-sm">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '8px', backgroundColor: '#0f172a', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '13px' }}>
                     {comp.name.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <p className="font-semibold text-slate-900 group-hover:text-orange-600 transition-colors">{comp.name}</p>
-                    <span className="text-xs text-emerald-600 font-medium">ENTREPRISE ACTIVE</span>
+                    <p style={{ fontWeight: 'bold', color: '#0f172a', margin: 0, fontSize: '14px' }}>{comp.name}</p>
+                    <span style={{ fontSize: '11px', color: '#059669', fontWeight: 600 }}>ENTREPRISE ACTIVE</span>
                   </div>
                 </div>
-                <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-orange-500 group-hover:translate-x-0.5 transition-all" />
+                <span style={{ color: '#94a3b8', fontWeight: 'bold' }}>➔</span>
               </button>
             ))}
           </div>
 
-          <form onSubmit={handleCreateCompany} className="pt-4 border-t border-stone-100 space-y-3">
-            <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">Créer une entreprise</label>
+          <form onSubmit={handleCreateCompany} style={{ borderTop: '1px solid #f1f1f1', paddingTop: '20px' }}>
+            <label style={{ fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', color: '#94a3b8', display: 'block', marginBottom: '8px' }}>Créer une entreprise</label>
             <input
               type="text"
               placeholder="Ex. Atelier des Rives"
               value={newCompanyName}
               onChange={e => setNewCompanyName(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm"
+              style={styles.input}
             />
-            <button
-              type="submit"
-              className="w-full py-3 px-4 bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-xl transition-all shadow-md text-sm flex items-center justify-center gap-2"
-            >
-              <Plus className="w-4 h-4" /> Créer
+            <button type="submit" style={styles.buttonPrimary}>
+              + Créer l'entreprise
             </button>
           </form>
 
-          <div className="pt-4 text-center space-y-1">
-            <p className="text-xs text-slate-400 flex items-center justify-center gap-1">
-              <Shield className="w-3.5 h-3.5" /> Vos informations restent confidentielles
-            </p>
-            <p className="text-[11px] text-stone-400">Une entreprise, un espace fiable</p>
+          <div style={{ marginTop: '24px', textAlign: 'center' }}>
+            <p style={{ fontSize: '11px', color: '#94a3b8', margin: '4px 0' }}>🛡️ Vos informations restent confidentielles</p>
+            <p style={{ fontSize: '10px', color: '#cbd5e1', margin: 0 }}>Une entreprise, un espace fiable</p>
           </div>
         </div>
       </div>
     );
   }
 
-  // 2. Application principale une fois l'entreprise sélectionnée
   return (
-    <div className="min-h-screen bg-[#FDFBF7] text-slate-800 font-sans">
-      {/* Header */}
-      <header className="bg-white border-b border-stone-200 sticky top-0 z-30 shadow-xs">
-        <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-xl bg-orange-500 text-white flex items-center justify-center font-bold shadow-sm">
-              <Clock className="w-5 h-5" />
-            </div>
+    <div style={{ minHeight: '100vh', backgroundColor: '#FDFBF7', color: '#1e293b', fontFamily: 'system-ui, sans-serif' }}>
+      <header style={{ backgroundColor: '#ffffff', borderBottom: '1px solid #e2e8f0', padding: '12px 16px', position: 'sticky', top: 0, zIndex: 30 }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '10px', backgroundColor: '#ea580c', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>🕒</div>
             <div>
-              <h1 className="font-bold text-slate-900 leading-none">Pointage RH</h1>
-              <span className="text-xs text-orange-600 font-medium">{currentCompany.name}</span>
+              <h1 style={{ fontSize: '15px', fontWeight: 'bold', margin: 0 }}>Pointage RH</h1>
+              <span style={{ fontSize: '11px', color: '#ea580c', fontWeight: 600 }}>{currentCompany.name}</span>
             </div>
           </div>
-          
           <button
             onClick={() => setCurrentCompany(null)}
-            className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-red-600 bg-stone-100 hover:bg-red-50 px-3 py-2 rounded-lg transition-all"
+            style={{ fontSize: '11px', fontWeight: 'bold', color: '#475569', backgroundColor: '#f1f5f9', border: 'none', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer' }}
           >
-            <LogOut className="w-4 h-4" /> Changer d'entreprise
+            ← Changer d'entreprise
           </button>
         </div>
       </header>
 
-      {/* Navigation Tabs */}
-      <div className="max-w-5xl mx-auto px-4 mt-6">
-        <div className="flex bg-stone-200/70 p-1 rounded-xl max-w-md mx-auto shadow-inner">
+      <div style={{ maxWidth: '600px', margin: '20px auto', padding: '0 16px' }}>
+        <div style={{ display: 'flex', backgroundColor: '#e2e8f0', padding: '4px', borderRadius: '12px', marginBottom: '24px' }}>
           <button
             onClick={() => setActiveTab('dashboard')}
-            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${activeTab === 'dashboard' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+            style={{ ...styles.navTab, backgroundColor: activeTab === 'dashboard' ? '#fff' : 'transparent', color: activeTab === 'dashboard' ? '#0f172a' : '#64748b', boxShadow: activeTab === 'dashboard' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none' }}
           >
             Tableau de bord
           </button>
           <button
             onClick={() => setActiveTab('clock')}
-            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${activeTab === 'clock' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+            style={{ ...styles.navTab, backgroundColor: activeTab === 'clock' ? '#fff' : 'transparent', color: activeTab === 'clock' ? '#0f172a' : '#64748b', boxShadow: activeTab === 'clock' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none' }}
           >
             Borne de Pointage
           </button>
           <button
             onClick={() => setActiveTab('employees')}
-            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${activeTab === 'employees' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+            style={{ ...styles.navTab, backgroundColor: activeTab === 'employees' ? '#fff' : 'transparent', color: activeTab === 'employees' ? '#0f172a' : '#64748b', boxShadow: activeTab === 'employees' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none' }}
           >
             Employés ({employees.length})
           </button>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <main className="max-w-5xl mx-auto px-4 py-6">
         {activeTab === 'dashboard' && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Employés</span>
-                  <Users className="w-5 h-5 text-orange-500" />
-                </div>
-                <p className="text-3xl font-extrabold text-slate-900 mt-2">{employees.length}</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+                <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#94a3b8', textTransform: 'uppercase' }}>Total Employés</span>
+                <p style={{ fontSize: '28px', fontWeight: 'extrabold', color: '#0f172a', margin: '8px 0 0 0' }}>{employees.length}</p>
               </div>
-
-              <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Pointages du jour</span>
-                  <Clock className="w-5 h-5 text-emerald-500" />
-                </div>
-                <p className="text-3xl font-extrabold text-slate-900 mt-2">{records.length}</p>
+              <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+                <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#94a3b8', textTransform: 'uppercase' }}>Pointages du jour</span>
+                <p style={{ fontSize: '28px', fontWeight: 'extrabold', color: '#0f172a', margin: '8px 0 0 0' }}>{records.length}</p>
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl border border-stone-200 p-6 shadow-sm space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-bold text-slate-900">Historique Récent</h3>
-                <button
-                  onClick={exportToExcel}
-                  className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm"
-                >
-                  <FileSpreadsheet className="w-4 h-4" /> Exporter en Excel
+            <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h3 style={{ fontSize: '15px', fontWeight: 'bold', margin: 0 }}>Historique Récent</h3>
+                <button onClick={exportToExcel} style={{ padding: '8px 14px', backgroundColor: '#059669', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
+                  📊 Exporter Excel
                 </button>
               </div>
-
               {records.length === 0 ? (
-                <p className="text-sm text-slate-400 text-center py-8">Aucun pointage enregistré pour le moment.</p>
+                <p style={{ fontSize: '13px', color: '#94a3b8', textAlign: 'center', padding: '30px 0' }}>Aucun pointage enregistré.</p>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-sm">
-                    <thead>
-                      <tr className="border-b border-stone-100 text-slate-400 text-xs uppercase">
-                        <th className="pb-3 font-semibold">Employé</th>
-                        <th className="pb-3 font-semibold">Type</th>
-                        <th className="pb-3 font-semibold">Heure</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-stone-50">
-                      {records.map(r => (
-                        <tr key={r.id} className="hover:bg-stone-50/50">
-                          <td className="py-3 font-medium text-slate-900">{r.employeeName}</td>
-                          <td className="py-3">
-                            <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${r.type === 'IN' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
-                              {r.type === 'IN' ? 'Entrée' : 'Sortie'}
-                            </span>
-                          </td>
-                          <td className="py-3 text-slate-500">{r.timestamp}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                records.map(r => (
+                  <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #f1f5f9', fontSize: '13px' }}>
+                    <span style={{ fontWeight: 'bold' }}>{r.employeeName}</span>
+                    <span style={{ color: r.type === 'IN' ? '#059669' : '#d97706', fontWeight: 'bold' }}>{r.type === 'IN' ? 'Entrée' : 'Sortie'}</span>
+                    <span style={{ color: '#64748b' }}>{r.timestamp}</span>
+                  </div>
+                ))
               )}
             </div>
           </div>
         )}
 
         {activeTab === 'clock' && (
-          <div className="max-w-md mx-auto bg-white rounded-2xl border border-stone-200 p-8 shadow-sm space-y-6 text-center">
-            <div>
-              <div className="w-12 h-12 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-xs">
-                <Key className="w-6 h-6" />
-              </div>
-              <h3 className="text-lg font-bold text-slate-900">Borne de Pointage</h3>
-              <p className="text-xs text-slate-500 mt-1">Entrez votre code PIN personnel pour pointer</p>
-            </div>
+          <div style={{ backgroundColor: '#fff', padding: '24px', borderRadius: '16px', border: '1px solid #e2e8f0', textAlign: 'center' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: 'bold', margin: '0 0 8px 0' }}>Borne de Pointage</h3>
+            <p style={{ fontSize: '12px', color: '#64748b', marginBottom: '20px' }}>Entrez votre code PIN pour pointer</p>
 
             {clockMessage && (
-              <div className={`p-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 ${clockMessage.type === 'success' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
-                {clockMessage.type === 'success' ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+              <div style={{ padding: '10px', borderRadius: '10px', fontSize: '12px', fontWeight: 'bold', marginBottom: '16px', backgroundColor: clockMessage.type === 'success' ? '#ecfdf5' : '#fef2f2', color: clockMessage.type === 'success' ? '#059669' : '#dc2626' }}>
                 {clockMessage.text}
               </div>
             )}
@@ -348,20 +302,14 @@ export default function App() {
               placeholder="••••"
               value={pinInput}
               onChange={e => setPinInput(e.target.value)}
-              className="w-full text-center text-3xl tracking-widest py-3 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 font-mono"
+              style={{ width: '100%', maxWidth: '200px', textAlign: 'center', fontSize: '24px', letterSpacing: '8px', padding: '12px', borderRadius: '12px', border: '1px solid #cbd5e1', margin: '0 auto 20px auto', display: 'block', outline: 'none' }}
             />
 
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => handleClock('IN')}
-                className="py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition-all shadow-sm text-sm"
-              >
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <button onClick={() => handleClock('IN')} style={{ padding: '14px', backgroundColor: '#059669', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>
                 Entrée (IN)
               </button>
-              <button
-                onClick={() => handleClock('OUT')}
-                className="py-3.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl transition-all shadow-sm text-sm"
-              >
+              <button onClick={() => handleClock('OUT')} style={{ padding: '14px', backgroundColor: '#0f172a', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>
                 Sortie (OUT)
               </button>
             </div>
@@ -369,56 +317,32 @@ export default function App() {
         )}
 
         {activeTab === 'employees' && (
-          <div className="space-y-6">
-            <div className="bg-white rounded-2xl border border-stone-200 p-6 shadow-sm space-y-4">
-              <h3 className="font-bold text-slate-900">Ajouter un employé</h3>
-              <form onSubmit={handleAddEmployee} className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <input
-                  type="text"
-                  placeholder="Nom complet"
-                  value={newEmpName}
-                  onChange={e => setNewEmpName(e.target.value)}
-                  className="px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-                />
-                <input
-                  type="text"
-                  placeholder="Code PIN (ex: 1234)"
-                  value={newEmpPin}
-                  onChange={e => setNewEmpPin(e.target.value)}
-                  className="px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 font-mono"
-                />
-                <button
-                  type="submit"
-                  className="py-2.5 px-4 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl transition-all text-sm shadow-sm flex items-center justify-center gap-2"
-                >
-                  <Plus className="w-4 h-4" /> Ajouter
-                </button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+              <h3 style={{ fontSize: '15px', fontWeight: 'bold', margin: '0 0 12px 0' }}>Ajouter un employé</h3>
+              <form onSubmit={handleAddEmployee} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <input type="text" placeholder="Nom complet" value={newEmpName} onChange={e => setNewEmpName(e.target.value)} style={styles.input} />
+                <input type="text" placeholder="Code PIN (ex: 1234)" value={newEmpPin} onChange={e => setNewEmpPin(e.target.value)} style={styles.input} />
+                <button type="submit" style={{ padding: '12px', backgroundColor: '#ea580c', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>+ Ajouter l'employé</button>
               </form>
             </div>
 
-            <div className="bg-white rounded-2xl border border-stone-200 p-6 shadow-sm space-y-4">
-              <h3 className="font-bold text-slate-900">Liste des salariés</h3>
-              <div className="divide-y divide-stone-100">
-                {employees.map(emp => (
-                  <div key={emp.id} className="py-3 flex items-center justify-between">
-                    <div>
-                      <p className="font-bold text-slate-900">{emp.name}</p>
-                      <span className="text-xs text-slate-400">PIN : •••• (Rôle : {emp.role})</span>
-                    </div>
-                    <button
-                      onClick={() => handleDeleteEmployee(emp.id)}
-                      className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+            <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+              <h3 style={{ fontSize: '15px', fontWeight: 'bold', margin: '0 0 12px 0' }}>Salariés enregistrés</h3>
+              {employees.map(emp => (
+                <div key={emp.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #f1f5f9' }}>
+                  <div>
+                    <p style={{ fontWeight: 'bold', margin: 0, fontSize: '14px' }}>{emp.name}</p>
+                    <span style={{ fontSize: '11px', color: '#94a3b8' }}>Rôle : {emp.role}</span>
                   </div>
-                ))}
-              </div>
+                  <button onClick={() => handleDeleteEmployee(emp.id)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '16px' }}>🗑️</button>
+                </div>
+              ))}
             </div>
           </div>
         )}
-      </main>
+      </div>
     </div>
   );
       }
-      
+        
