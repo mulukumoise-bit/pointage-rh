@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'interface';
 
 interface AttendanceRecord {
   id: string;
@@ -166,19 +166,19 @@ export default function App() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{ width: '38px', height: '38px', borderRadius: '10px', backgroundColor: '#0F4C5C', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>⏰</div>
             <div>
-              <h1 style={{ fontSize: '16px', fontWeight: 'bold', margin: 0, color: '#0F2M3A' }}>Pointage RH Pro</h1>
-              <span style={{ fontSize: '11px', color: '#64748B' }}>GÉOLOCALISÉ & ANALYTIQUE</span>
+              <h1 style={{ fontSize: '16px', fontWeight: 'bold', margin: 0, color: '#0F2M3A' }}>Pointage RH</h1>
+              <span style={{ fontSize: '11px', color: '#64748B' }}>PRÉSENCE, SANS DÉTOUR</span>
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', backgroundColor: '#E2E8F0', padding: '4px 10px', borderRadius: '20px', fontWeight: 600, color: '#0F2M3A' }}>
             <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#059669' }}></span>
-            EN LIGNE
+            LOCAL & SÉCURISÉ
           </div>
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', fontSize: '13px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'bold', color: '#0F2M3A' }}>
-            <span>🏢</span>
+            <span>📅</span>
             {isEditingCompany ? (
               <input 
                 type="text" 
@@ -201,11 +201,11 @@ export default function App() {
         </div>
 
         <div style={{ backgroundColor: '#132238', color: '#FFFFFF', borderRadius: '20px', padding: '24px', marginBottom: '20px', boxShadow: '0 10px 25px rgba(19, 34, 56, 0.2)' }}>
-          <p style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: '#94A3B8', margin: '0 0 8px 0', fontWeight: 'bold' }}>Sécurité & Transparence</p>
-          <h2 style={{ fontSize: '22px', fontWeight: 'bold', margin: '0 0 12px 0', lineHeight: '1.2', color: '#FFFFFF' }}>Pointage intelligent, <span style={{ color: '#E29578' }}>au bureau.</span></h2>
-          <p style={{ fontSize: '12px', color: '#CBD5E1', margin: '0 0 16px 0', lineHeight: '1.4' }}>Le géofencing vérifie automatiquement votre présence sur site pour garantir des rapports irréprochables.</p>
+          <p style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: '#94A3B8', margin: '0 0 8px 0', fontWeight: 'bold' }}>Bonjour, vous êtes au bon endroit</p>
+          <h2 style={{ fontSize: '22px', fontWeight: 'bold', margin: '0 0 12px 0', lineHeight: '1.2', color: '#FFFFFF' }}>Commencer sa journée, <span style={{ color: '#E29578' }}>simplement.</span></h2>
+          <p style={{ fontSize: '12px', color: '#CBD5E1', margin: '0 0 16px 0', lineHeight: '1.4' }}>Un pointage clair, en quelques secondes. Votre position confirme votre présence et reste attachée à ce seul enregistrement.</p>
           <div style={{ borderTop: '1px solid rgba(255,255,255,0.15)', paddingTop: '12px', fontSize: '11px', color: '#94A3B8', letterSpacing: '0.5px', fontWeight: 'bold' }}>
-            RAYON DE CONTRÔLE : 500 MÈTRES
+            UN GESTE, UNE TRACE FIABLE
           </div>
         </div>
 
@@ -236,7 +236,7 @@ export default function App() {
             <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#0F2M3A', marginBottom: '16px' }}>{currentDateFormatted}</div>
 
             <p style={{ fontSize: '12px', color: '#475569', marginBottom: '16px', lineHeight: '1.4' }}>
-              Indiquez votre nom complet puis validez votre arrivée ou votre départ.
+              Indiquez votre nom, puis choisissez votre arrivée ou votre départ. L'heure et votre position seront relevées pour {companyName}.
             </p>
 
             <div style={{ marginBottom: '14px' }}>
@@ -271,6 +271,9 @@ export default function App() {
                 >
                   ← Pointer le départ
                 </button>
+                <div style={{ fontSize: '11px', color: '#64748B', textAlign: 'center', marginTop: '4px' }}>
+                  🔒 La position est demandée uniquement au moment du clic.
+                </div>
               </div>
             )}
           </div>
@@ -278,20 +281,20 @@ export default function App() {
 
         <div style={{ backgroundColor: '#ffffff', borderRadius: '20px', padding: '20px', border: '1px solid #E2E8F0', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
           <div style={{ marginBottom: '14px' }}>
-            <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#94A3B8' }}>PILOTAGE & STATISTIQUES</span>
-            <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: '#0F2M3A', margin: '2px 0 0 0' }}>Espace Administrateur</h3>
+            <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#94A3B8' }}>LA JOURNÉE, EN UN COUP D'ŒIL</span>
+            <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: '#0F2M3A', margin: '2px 0 0 0' }}>Données administrateur</h3>
           </div>
 
           {!isAdminUnlocked ? (
             <div style={{ backgroundColor: '#F8FAFC', padding: '16px', borderRadius: '14px', border: '1px solid #E2E8F0' }}>
               <div style={{ marginBottom: '12px' }}>
-                <div style={{ fontWeight: 'bold', fontSize: '13px', color: '#0F2M3A' }}>Accès protégé</div>
-                <div style={{ fontSize: '11px', color: '#64748B' }}>Consultez les tableaux de bord, les statistiques du jour et exportez vos fichiers CSV.</div>
+                <div style={{ fontWeight: 'bold', fontSize: '13px', color: '#0F2M3A' }}>Historique réservé</div>
+                <div style={{ fontSize: '11px', color: '#64748B' }}>Déverrouillez l'espace administrateur pour consulter les présences et exporter les données de {companyName}.</div>
               </div>
               <form onSubmit={handleAdminUnlock} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <input 
                   type="password" 
-                  placeholder="Mot de passe admin"
+                  placeholder="Votre mot de passe"
                   value={adminPassword}
                   onChange={e => setAdminPassword(e.target.value)}
                   style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '13px', boxSizing: 'border-box' }}
@@ -305,7 +308,7 @@ export default function App() {
                 </button>
               </form>
               <div style={{ fontSize: '10px', color: '#94A3B8', marginTop: '8px' }}>
-                🔑 Mot de passe par défaut : <b>admin123</b>
+                🔑 Mot de passe initial de l'entreprise : <b>admin123</b>
               </div>
             </div>
           ) : (
@@ -326,9 +329,9 @@ export default function App() {
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#F1F5F9', padding: '10px 12px', borderRadius: '10px', marginBottom: '14px' }}>
-                <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#059669' }}>● ADMIN ACTIF</span>
+                <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#059669' }}>● SESSION ADMIN ACTIVE</span>
                 <div style={{ display: 'flex', gap: '6px' }}>
-                  <button onClick={exportCSV} style={{ padding: '6px 10px', backgroundColor: '#0F4C5C', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}>Exporter CSV</button>
+                  <button onClick={exportCSV} style={{ padding: '6px 10px', backgroundColor: '#0F4C5C', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}>CSV / Excel</button>
                   <button onClick={() => setIsAdminUnlocked(false)} style={{ padding: '6px 10px', backgroundColor: '#E2E8F0', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}>Verrouiller</button>
                 </div>
               </div>
@@ -360,8 +363,4 @@ export default function App() {
                   <div style={{ textAlign: 'center', padding: '20px', fontSize: '12px', color: '#64748B' }}>Aucun enregistrement trouvé.</div>
                 ) : (
                   filteredRecords.map(r => (
-                    <div key={r.id} style={{ backgroundColor: '#F8FAFC', padding: '10px 12px', borderRadius: '10px', border: '1px solid #E2E8F0', fontSize: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div>
-                        <div style={{ fontWeight: 'bold', color: '#0F2M3A' }}>{r.name}</div>
-                        <div style={{ fontSize: '10px', color: '#64748B' }}>📅 {r.dateStr} | 📍 {r.location}</div>
-                        {r.isOutOfBounds && <div style={{ fontSize: '10px', color: '#D97706'
+                    <div key={r.id} style={{ backgroundColor: '#F8FAFC', padding: '10px 12px', borderRadius: '10px', border: '1px solid #E2E8F0', fontSize: '12px', display: 'flex', justifyContent: 'space-between', ali
