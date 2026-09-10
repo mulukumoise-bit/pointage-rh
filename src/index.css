@@ -267,4 +267,3 @@ button:focus-visible, input:focus-visible {
 .company-option-copy strong { font-size: .82rem; }
 .company-option-copy small { color: hsl(var(--muted-foreground)); font-family: var(--app-font-mono); font-size: .59rem; letter-spacing: .04em; text-transform: uppercase; }
 .empty-company { display: flex; align-items: center; gap: .7rem; padding: 1rem; border: 1px dashed hsl(var(--border)); border-radius: .8rem; color: hsl(var(--muted-foreground)); font-size: .78rem; line-height: 1.45; }
-.create-company { margin-top: 2rem; padding-top: 1.3rem; border-top: 1px solid h
