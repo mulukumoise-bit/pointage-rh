@@ -16,7 +16,7 @@ export default function App() {
 
   const [nameInput, setNameInput] = useState('');
   const [records, setRecords] = useState<AttendanceRecord[]>(() => {
-    const saved = localStorage.getItem('prh_records_v2');
+    const saved = localStorage.getItem('prh_records_v3');
     return saved ? JSON.parse(saved) : [
       { id: '1', name: 'Moïse Muluku', type: 'Arrivée', timestamp: '21:47:41', dateStr: '10/09/2026', location: '-11.5705°, 27.5510°' },
       { id: '2', name: 'Muteba john', type: 'Arrivée', timestamp: '22:38:57', dateStr: '10/09/2026', location: '-11.5703°, 27.5513°' },
@@ -33,7 +33,7 @@ export default function App() {
   const [adminError, setAdminError] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem('prh_records_v2', JSON.stringify(records));
+    localStorage.setItem('prh_records_v3', JSON.stringify(records));
   }, [records]);
 
   const handleClockAction = (type: 'Arrivée' | 'Départ') => {
@@ -54,7 +54,7 @@ export default function App() {
           setLoadingGps(false);
         },
         () => {
-          saveRecord(nameInput.trim(), type, "-11.5705°, 27.5510°"); // Fallback Lubumbashi coord
+          saveRecord(nameInput.trim(), type, "-11.5705°, 27.5510°");
           setLoadingGps(false);
         },
         { timeout: 10000 }
@@ -110,6 +110,8 @@ export default function App() {
     document.body.removeChild(link);
   };
 
+  const currentDateFormatted = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#FDFBF7', color: '#1E293B', fontFamily: 'system-ui, sans-serif', paddingBottom: '40px' }}>
       
@@ -154,7 +156,7 @@ export default function App() {
           </button>
         </div>
 
-        {/* Hero Card */}
+        {/* Hero Card (Toujours visible comme sur ton design d'origine) */}
         <div style={{ backgroundColor: '#0F2M3A', color: '#fff', borderRadius: '20px', padding: '24px', marginBottom: '20px', position: 'relative', overflow: 'hidden' }}>
           <p style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', opacity: 0.8, marginBottom: '8px' }}>Bonjour, vous êtes au bon endroit</p>
           <h2 style={{ fontSize: '22px', fontWeight: 'bold', margin: '0 0 12px 0', lineHeight: '1.2' }}>Commencer sa journée, <span style={{ color: '#E29578' }}>simplement.</span></h2>
@@ -164,31 +166,37 @@ export default function App() {
           </div>
         </div>
 
-        {/* Success Banner if just clocked */}
-        {lastSuccess && (
-          <div style={{ backgroundColor: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '16px', padding: '16px', marginBottom: '20px' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: '#166534', margin: '0 0 6px 0' }}>{lastSuccess.type} pointée</h3>
-            <p style={{ fontSize: '12px', color: '#15803D', margin: '0 0 12px 0' }}>C'est enregistré pour <b>{lastSuccess.name}</b>. La confirmation est bien arrivée dans l'espace de votre entreprise.</p>
-            <div style={{ backgroundColor: '#fff', padding: '10px 12px', borderRadius: '8px', fontSize: '12px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: '#64748B' }}>HEURE DU POINTAGE</span>
-              <span style={{ fontWeight: 'bold' }}>{lastSuccess.time}</span>
+        {/* Success Banner si pointage effectué */}
+        {lastSuccess ? (
+          <div style={{ backgroundColor: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '20px', padding: '20px', marginBottom: '20px' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#166534', margin: '0 0 8px 0' }}>{lastSuccess.type} pointée</h3>
+            <p style={{ fontSize: '13px', color: '#15803D', margin: '0 0 16px 0', lineHeight: '1.4' }}>C'est enregistré pour <b>{lastSuccess.name}</b>. La confirmation est bien arrivée dans l'espace de votre entreprise.</p>
+            
+            <div style={{ backgroundColor: '#fff', padding: '12px 14px', borderRadius: '12px', fontSize: '12px', marginBottom: '10px', display: 'flex', justifyContent: 'space-between', border: '1px solid #dcfce7' }}>
+              <span style={{ color: '#64748B', fontWeight: 'bold' }}>HEURE DU POINTAGE</span>
+              <span style={{ fontWeight: 'bold', fontSize: '14px' }}>{lastSuccess.time}</span>
             </div>
-            <div style={{ backgroundColor: '#fff', padding: '10px 12px', borderRadius: '8px', fontSize: '12px', marginBottom: '12px', display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: '#64748B' }}>POSITION CONFIRMÉE</span>
-              <span style={{ fontFamily: 'monospace', fontWeight: 'bold' }}>{lastSuccess.gps}</span>
+            
+            <div style={{ backgroundColor: '#fff', padding: '12px 14px', borderRadius: '12px', fontSize: '12px', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', border: '1px solid #dcfce7' }}>
+              <span style={{ color: '#64748B', fontWeight: 'bold' }}>POSITION CONFIRMÉE</span>
+              <span style={{ fontFamily: 'monospace', fontWeight: 'bold', fontSize: '13px' }}>{lastSuccess.gps}</span>
             </div>
+
             <button 
               onClick={() => setLastSuccess(null)}
-              style={{ width: '100%', padding: '10px', backgroundColor: '#E2E8F0', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', color: '#334155' }}
+              style={{ width: '100%', padding: '14px', backgroundColor: '#166534', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}
             >
-              🔄 Pointers à nouveau
+              🔄 Pointer à nouveau
             </button>
           </div>
-        )}
-
-        {/* Clock Form */}
-        {!lastSuccess && (
+        ) : (
+          /* Formulaire de Pointage Classique */
           <div style={{ backgroundColor: '#ffffff', borderRadius: '20px', padding: '20px', border: '1px solid #E2E8F0', marginBottom: '20px', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#94A3B8', letterSpacing: '1px' }}>Aujourd'hui</span>
+              <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#0F2M3A' }}>{currentDateFormatted}</span>
+            </div>
+
             <p style={{ fontSize: '12px', color: '#475569', marginBottom: '16px', lineHeight: '1.4' }}>
               Indiquez votre nom, puis choisissez votre arrivée ou votre départ. L'heure et votre position seront relevées pour {companyName}.
             </p>
@@ -196,7 +204,7 @@ export default function App() {
             <div style={{ marginBottom: '14px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                 <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#1E293B' }}>Nom / Prénom</label>
-                <span style={{ fontSize: '11px', color: '#DC2626' }}>Requis</span>
+                <span style={{ fontSize: '11px', color: '#DC2626', fontWeight: 'bold' }}>Requis</span>
               </div>
               <input 
                 type="text" 
@@ -215,13 +223,13 @@ export default function App() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <button 
                   onClick={() => handleClockAction('Arrivée')}
-                  style={{ width: '100%', padding: '15px', backgroundColor: '#1E463E', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                  style={{ width: '100%', padding: '15px', backgroundColor: '#1E463E', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer' }}
                 >
                   → Pointer l'arrivée
                 </button>
                 <button 
                   onClick={() => handleClockAction('Départ')}
-                  style={{ width: '100%', padding: '15px', backgroundColor: '#FCEFD2', color: '#78350F', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                  style={{ width: '100%', padding: '15px', backgroundColor: '#FCEFD2', color: '#78350F', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer' }}
                 >
                   ← Pointer le départ
                 </button>
@@ -260,7 +268,7 @@ export default function App() {
                   onChange={e => setAdminPassword(e.target.value)}
                   style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '13px', boxSizing: 'border-box' }}
                 />
-                {adminError && <span style={{ fontSize: '11px', color: '#DC2626' }}>Mot de passe incorrect (essayez admin123)</span>}
+                {adminError && <span style={{ fontSize: '11px', color: '#DC2626' }}>Mot de passe incorrect (admin123)</span>}
                 <button 
                   type="submit"
                   style={{ padding: '12px', backgroundColor: '#1E463E', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '13px', cursor: 'pointer' }}
@@ -268,7 +276,6 @@ export default function App() {
                   🔒 Déverrouiller
                 </button>
               </form>
-              <span style={{ fontSize: '10px', color: '#94A3B8', display: 'block', marginTop: '8px' }}>Mot de passe initial : admin123</span>
             </div>
           ) : (
             <div>
@@ -304,5 +311,5 @@ export default function App() {
       </div>
     </div>
   );
-        }
-    
+                                                  }
+      
