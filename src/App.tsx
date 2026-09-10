@@ -1,202 +1,320 @@
 import React, { useState, useEffect } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import * as XLSX from 'xlsx';
 import { 
-  Users, Clock, FileSpreadsheet, CheckCircle2, 
-  UserPlus, LogIn, LogOut, Search, ShieldAlert, Building2 
+  Building2, Users, Clock, FileSpreadsheet, Plus, Shield, 
+  CheckCircle, AlertCircle, LogOut, Search, Trash2, Key, ChevronRight 
 } from 'lucide-react';
 
-const queryClient = new QueryClient();
+interface Company {
+  id: string;
+  name: string;
+  active: boolean;
+}
 
 interface Employee {
   id: string;
   name: string;
-  department: string;
   pin: string;
+  role: string;
 }
 
 interface AttendanceRecord {
   id: string;
-  employeeId: string;
   employeeName: string;
-  department: string;
   type: 'IN' | 'OUT';
   timestamp: string;
+  companyName: string;
 }
 
-function PointageApp() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'pointage' | 'employees'>('dashboard');
-  
-  // Initial state with local storage support
+export default function App() {
+  const [currentCompany, setCurrentCompany] = useState<Company | null>(() => {
+    const saved = localStorage.getItem('prh_company');
+    return saved ? JSON.parse(saved) : null;
+  });
+
+  const [companies, setCompanies] = useState<Company[]>(() => {
+    const saved = localStorage.getItem('prh_companies');
+    return saved ? JSON.parse(saved) : [{ id: '1', name: 'Atelier Tech', active: true }];
+  });
+
+  const [newCompanyName, setNewCompanyName] = useState('');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'clock' | 'employees'>('dashboard');
+
+  // Employees & Attendance states
   const [employees, setEmployees] = useState<Employee[]>([
-    { id: '1', name: 'Jean-Paul Muluku', department: 'Administration', pin: '1234' },
-    { id: '2', name: 'Synthiche Muluku', department: 'Ressources Humaines', pin: '5678' }
+    { id: '1', name: 'Jean Dupont', pin: '1234', role: 'Développeur' },
+    { id: '2', name: 'Marie Curie', pin: '5678', role: 'RH' }
   ]);
 
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [pinInput, setPinInput] = useState('');
-  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
-  const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const [clockMessage, setClockMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
-  // New employee form state
-  const [newName, setNewName] = useState('');
-  const [newDept, setNewDept] = useState('');
-  const [newPin, setNewPin] = useState('');
+  // New Employee Form
+  const [newEmpName, setNewEmpName] = useState('');
+  const [newEmpPin, setNewEmpPin] = useState('');
+  const [newEmpRole, setNewEmpRole] = useState('');
 
-  const handlePinSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (currentCompany) {
+      localStorage.setItem('prh_company', JSON.stringify(currentCompany));
+    } else {
+      localStorage.removeItem('prh_company');
+    }
+  }, [currentCompany]);
+
+  const handleCreateCompany = (e: React.FormEvent) => {
     e.preventDefault();
-    const emp = employees.find(item => item.pin === pinInput);
+    if (!newCompanyName.trim()) return;
+    const newComp: Company = {
+      id: Date.now().toString(),
+      name: newCompanyName.trim(),
+      active: true
+    };
+    const updated = [...companies, newComp];
+    setCompanies(updated);
+    setCurrentCompany(newComp);
+    setNewCompanyName('');
+  };
+
+  const handleClock = (type: 'IN' | 'OUT') => {
+    if (!pinInput.trim()) return;
+    const emp = employees.find(e => e.pin === pinInput);
     if (!emp) {
-      setMessage({ text: 'PIN incorrect ou employé introuvable.', type: 'error' });
+      setClockMessage({ text: 'PIN incorrect ou employé introuvable.', type: 'error' });
+      setPinInput('');
       return;
     }
 
-    const lastRecord = records.filter(r => r.employeeId === emp.id).pop();
-    const nextType: 'IN' | 'OUT' = lastRecord && lastRecord.type === 'IN' ? 'OUT' : 'IN';
-
     const newRecord: AttendanceRecord = {
       id: Date.now().toString(),
-      employeeId: emp.id,
       employeeName: emp.name,
-      department: emp.department,
-      type: nextType,
-      timestamp: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+      type,
+      timestamp: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      companyName: currentCompany?.name || 'Entreprise'
     };
 
     setRecords([newRecord, ...records]);
-    setMessage({ 
-      text: `Pointage validé pour ${emp.name} (${nextType === 'IN' ? 'Entrée' : 'Sortie'})`, 
-      type: 'success' 
-    });
+    setClockMessage({ text: `Pointage ${type === 'IN' ? 'Entrée' : 'Sortie'} réussi pour ${emp.name} !`, type: 'success' });
     setPinInput('');
   };
 
   const handleAddEmployee = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newName || !newDept || !newPin) {
-      setMessage({ text: 'Veuillez remplir tous les champs.', type: 'error' });
-      return;
-    }
-
-    const newEmp: Employee = {
+    if (!newEmpName || !newEmpPin) return;
+    const emp: Employee = {
       id: Date.now().toString(),
-      name: newName,
-      department: newDept,
-      pin: newPin
+      name: newEmpName,
+      pin: newEmpPin,
+      role: newEmpRole || 'Salarié'
     };
+    setEmployees([...employees, emp]);
+    setNewEmpName('');
+    setNewEmpPin('');
+    setNewEmpRole('');
+  };
 
-    setEmployees([...employees, newEmp]);
-    setNewName('');
-    setNewDept('');
-    setNewPin('');
-    setMessage({ text: 'Employé ajouté avec succès !', type: 'success' });
+  const handleDeleteEmployee = (id: string) => {
+    setEmployees(employees.filter(e => e.id !== id));
   };
 
   const exportToExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(records);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Pointages");
-    XLSX.writeFile(workbook, "Rapport_Pointage_RH.xlsx");
+    let csvContent = "data:text/csv;charset=utf-8,Employe,Type,Heure,Entreprise\n";
+    records.forEach(r => {
+      csvContent += `"${r.employeeName}","${r.type}","${r.timestamp}","${r.companyName}"\n`;
+    });
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "pointages.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
-  return (
-    <div className="min-h-screen bg-slate-50 text-slate-800">
-      {/* Header */}
-      <header className="bg-blue-600 text-white shadow-md">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center space-x-3">
-            <Building2 className="w-8 h-8" />
-            <h1 className="text-xl font-bold">Pointage RH</h1>
+  // 1. Écran de sélection d'entreprise (si aucune entreprise choisie)
+  if (!currentCompany) {
+    return (
+      <div className="min-h-screen bg-[#FDFBF7] text-slate-800 flex flex-col justify-center items-center p-4 font-sans">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl border border-stone-100 p-8 space-y-6 relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-orange-500 to-amber-500"></div>
+          
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center font-bold shadow-sm">
+                <Clock className="w-5 h-5" />
+              </div>
+              <div>
+                <h1 className="text-lg font-bold tracking-tight text-slate-900">Pointage RH</h1>
+                <p className="text-xs text-slate-500 uppercase tracking-wider font-medium">Présence, sans détour</p>
+              </div>
+            </div>
+            <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              ESPACE SÉCURISÉ
+            </span>
           </div>
-          <nav className="flex space-x-2">
-            <button 
-              onClick={() => setActiveTab('dashboard')} 
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition ${activeTab === 'dashboard' ? 'bg-blue-700' : 'hover:bg-blue-500'}`}
+
+          <div className="space-y-2">
+            <h2 className="text-xl font-bold text-slate-900">Choisissez votre entreprise.</h2>
+            <p className="text-sm text-slate-500 leading-relaxed">
+              Le pointage reste immédiat pour les salariés. Les données de présence sont ensuite réservées à l'administrateur de l'entreprise.
+            </p>
+          </div>
+
+          <div className="space-y-3 pt-2">
+            <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">Entreprises existantes</label>
+            {companies.map(comp => (
+              <button
+                key={comp.id}
+                onClick={() => setCurrentCompany(comp)}
+                className="w-full text-left p-4 rounded-xl border border-stone-200 hover:border-orange-500 hover:bg-orange-50/30 transition-all flex items-center justify-between group shadow-sm"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-sm">
+                    {comp.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="font-semibold text-slate-900 group-hover:text-orange-600 transition-colors">{comp.name}</p>
+                    <span className="text-xs text-emerald-600 font-medium">ENTREPRISE ACTIVE</span>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-orange-500 group-hover:translate-x-0.5 transition-all" />
+              </button>
+            ))}
+          </div>
+
+          <form onSubmit={handleCreateCompany} className="pt-4 border-t border-stone-100 space-y-3">
+            <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">Créer une entreprise</label>
+            <input
+              type="text"
+              placeholder="Ex. Atelier des Rives"
+              value={newCompanyName}
+              onChange={e => setNewCompanyName(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-sm"
+            />
+            <button
+              type="submit"
+              className="w-full py-3 px-4 bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-xl transition-all shadow-md text-sm flex items-center justify-center gap-2"
             >
-              Tableau de bord
+              <Plus className="w-4 h-4" /> Créer
             </button>
-            <button 
-              onClick={() => setActiveTab('pointage')} 
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition ${activeTab === 'pointage' ? 'bg-blue-700' : 'hover:bg-blue-500'}`}
-            >
-              Pointer
-            </button>
-            <button 
-              onClick={() => setActiveTab('employees')} 
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition ${activeTab === 'employees' ? 'bg-blue-700' : 'hover:bg-blue-500'}`}
-            >
-              Employés
-            </button>
-          </nav>
+          </form>
+
+          <div className="pt-4 text-center space-y-1">
+            <p className="text-xs text-slate-400 flex items-center justify-center gap-1">
+              <Shield className="w-3.5 h-3.5" /> Vos informations restent confidentielles
+            </p>
+            <p className="text-[11px] text-stone-400">Une entreprise, un espace fiable</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. Application principale une fois l'entreprise sélectionnée
+  return (
+    <div className="min-h-screen bg-[#FDFBF7] text-slate-800 font-sans">
+      {/* Header */}
+      <header className="bg-white border-b border-stone-200 sticky top-0 z-30 shadow-xs">
+        <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-9 h-9 rounded-xl bg-orange-500 text-white flex items-center justify-center font-bold shadow-sm">
+              <Clock className="w-5 h-5" />
+            </div>
+            <div>
+              <h1 className="font-bold text-slate-900 leading-none">Pointage RH</h1>
+              <span className="text-xs text-orange-600 font-medium">{currentCompany.name}</span>
+            </div>
+          </div>
+          
+          <button
+            onClick={() => setCurrentCompany(null)}
+            className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-red-600 bg-stone-100 hover:bg-red-50 px-3 py-2 rounded-lg transition-all"
+          >
+            <LogOut className="w-4 h-4" /> Changer d'entreprise
+          </button>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-6">
-        {message && (
-          <div className={`p-4 mb-4 rounded-lg flex items-center space-x-2 ${message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-            <ShieldAlert className="w-5 h-5" />
-            <span>{message.text}</span>
-          </div>
-        )}
+      {/* Navigation Tabs */}
+      <div className="max-w-5xl mx-auto px-4 mt-6">
+        <div className="flex bg-stone-200/70 p-1 rounded-xl max-w-md mx-auto shadow-inner">
+          <button
+            onClick={() => setActiveTab('dashboard')}
+            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${activeTab === 'dashboard' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+          >
+            Tableau de bord
+          </button>
+          <button
+            onClick={() => setActiveTab('clock')}
+            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${activeTab === 'clock' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+          >
+            Borne de Pointage
+          </button>
+          <button
+            onClick={() => setActiveTab('employees')}
+            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${activeTab === 'employees' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+          >
+            Employés ({employees.length})
+          </button>
+        </div>
+      </div>
 
+      {/* Main Content */}
+      <main className="max-w-5xl mx-auto px-4 py-6">
         {activeTab === 'dashboard' && (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-slate-500">Total Employés</p>
-                  <h3 className="text-2xl font-bold">{employees.length}</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Employés</span>
+                  <Users className="w-5 h-5 text-orange-500" />
                 </div>
-                <Users className="w-10 h-10 text-blue-500" />
+                <p className="text-3xl font-extrabold text-slate-900 mt-2">{employees.length}</p>
               </div>
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-slate-500">Pointages du jour</p>
-                  <h3 className="text-2xl font-bold">{records.length}</h3>
+
+              <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Pointages du jour</span>
+                  <Clock className="w-5 h-5 text-emerald-500" />
                 </div>
-                <Clock className="w-10 h-10 text-emerald-500" />
-              </div>
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-slate-500">Exportation</p>
-                  <button 
-                    onClick={exportToExcel}
-                    className="mt-1 inline-flex items-center space-x-1 text-sm bg-emerald-600 text-white px-3 py-1.5 rounded-lg hover:bg-emerald-700 transition"
-                  >
-                    <FileSpreadsheet className="w-4 h-4" />
-                    <span>Excel</span>
-                  </button>
-                </div>
+                <p className="text-3xl font-extrabold text-slate-900 mt-2">{records.length}</p>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
-              <h3 className="text-lg font-semibold mb-4">Historique Récent</h3>
+            <div className="bg-white rounded-2xl border border-stone-200 p-6 shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-slate-900">Historique Récent</h3>
+                <button
+                  onClick={exportToExcel}
+                  className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm"
+                >
+                  <FileSpreadsheet className="w-4 h-4" /> Exporter en Excel
+                </button>
+              </div>
+
               {records.length === 0 ? (
-                <p className="text-slate-500 text-sm">Aucun pointage enregistré pour le moment.</p>
+                <p className="text-sm text-slate-400 text-center py-8">Aucun pointage enregistré pour le moment.</p>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
+                  <table className="w-full text-left text-sm">
                     <thead>
-                      <tr className="border-b text-xs text-slate-400 uppercase">
-                        <th className="py-3 px-4">Employé</th>
-                        <th className="py-3 px-4">Département</th>
-                        <th className="py-3 px-4">Type</th>
-                        <th className="py-3 px-4">Heure</th>
+                      <tr className="border-b border-stone-100 text-slate-400 text-xs uppercase">
+                        <th className="pb-3 font-semibold">Employé</th>
+                        <th className="pb-3 font-semibold">Type</th>
+                        <th className="pb-3 font-semibold">Heure</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y text-sm">
-                      {records.map(rec => (
-                        <tr key={rec.id}>
-                          <td className="py-3 px-4 font-medium">{rec.employeeName}</td>
-                          <td className="py-3 px-4 text-slate-500">{rec.department}</td>
-                          <td className="py-3 px-4">
-                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${rec.type === 'IN' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
-                              {rec.type === 'IN' ? 'Entrée' : 'Sortie'}
+                    <tbody className="divide-y divide-stone-50">
+                      {records.map(r => (
+                        <tr key={r.id} className="hover:bg-stone-50/50">
+                          <td className="py-3 font-medium text-slate-900">{r.employeeName}</td>
+                          <td className="py-3">
+                            <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${r.type === 'IN' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
+                              {r.type === 'IN' ? 'Entrée' : 'Sortie'}
                             </span>
                           </td>
-                          <td className="py-3 px-4 text-slate-500">{rec.timestamp}</td>
+                          <td className="py-3 text-slate-500">{r.timestamp}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -207,84 +325,92 @@ function PointageApp() {
           </div>
         )}
 
-        {activeTab === 'pointage' && (
-          <div className="max-w-md mx-auto bg-white rounded-xl shadow-sm border border-slate-100 p-8 text-center">
-            <h2 className="text-xl font-bold mb-2">Borne de Pointage</h2>
-            <p className="text-slate-500 text-sm mb-6">Entrez votre code PIN personnel pour pointer</p>
-            <form onSubmit={handlePinSubmit} className="space-y-4">
-              <input 
-                type="password" 
-                maxLength={6}
-                value={pinInput}
-                onChange={e => setPinInput(e.target.value)}
-                placeholder="Entrez votre PIN"
-                className="w-full text-center text-2xl tracking-widest px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <button 
-                type="submit"
-                className="w-full bg-blue-600 text-white font-medium py-3 rounded-xl hover:bg-blue-700 transition"
+        {activeTab === 'clock' && (
+          <div className="max-w-md mx-auto bg-white rounded-2xl border border-stone-200 p-8 shadow-sm space-y-6 text-center">
+            <div>
+              <div className="w-12 h-12 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-xs">
+                <Key className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900">Borne de Pointage</h3>
+              <p className="text-xs text-slate-500 mt-1">Entrez votre code PIN personnel pour pointer</p>
+            </div>
+
+            {clockMessage && (
+              <div className={`p-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 ${clockMessage.type === 'success' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
+                {clockMessage.type === 'success' ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+                {clockMessage.text}
+              </div>
+            )}
+
+            <input
+              type="password"
+              maxLength={6}
+              placeholder="••••"
+              value={pinInput}
+              onChange={e => setPinInput(e.target.value)}
+              className="w-full text-center text-3xl tracking-widest py-3 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 font-mono"
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                onClick={() => handleClock('IN')}
+                className="py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition-all shadow-sm text-sm"
               >
-                Valider le Pointage
+                Entrée (IN)
               </button>
-            </form>
+              <button
+                onClick={() => handleClock('OUT')}
+                className="py-3.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl transition-all shadow-sm text-sm"
+              >
+                Sortie (OUT)
+              </button>
+            </div>
           </div>
         )}
 
         {activeTab === 'employees' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
-              <h3 className="text-lg font-semibold mb-4">Ajouter un employé</h3>
-              <form onSubmit={handleAddEmployee} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Nom complet</label>
-                  <input 
-                    type="text" 
-                    value={newName}
-                    onChange={e => setNewName(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                    placeholder="Ex: Moïse Muluku"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Département</label>
-                  <input 
-                    type="text" 
-                    value={newDept}
-                    onChange={e => setNewDept(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                    placeholder="Ex: Informatique"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Code PIN (4 chiffres)</label>
-                  <input 
-                    type="password" 
-                    maxLength={4}
-                    value={newPin}
-                    onChange={e => setNewPin(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                    placeholder="Ex: 1234"
-                  />
-                </div>
-                <button 
+          <div className="space-y-6">
+            <div className="bg-white rounded-2xl border border-stone-200 p-6 shadow-sm space-y-4">
+              <h3 className="font-bold text-slate-900">Ajouter un employé</h3>
+              <form onSubmit={handleAddEmployee} className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <input
+                  type="text"
+                  placeholder="Nom complet"
+                  value={newEmpName}
+                  onChange={e => setNewEmpName(e.target.value)}
+                  className="px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                />
+                <input
+                  type="text"
+                  placeholder="Code PIN (ex: 1234)"
+                  value={newEmpPin}
+                  onChange={e => setNewEmpPin(e.target.value)}
+                  className="px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 font-mono"
+                />
+                <button
                   type="submit"
-                  className="w-full bg-slate-900 text-white font-medium py-2.5 rounded-lg hover:bg-slate-800 transition"
+                  className="py-2.5 px-4 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl transition-all text-sm shadow-sm flex items-center justify-center gap-2"
                 >
-                  Enregistrer l'employé
+                  <Plus className="w-4 h-4" /> Ajouter
                 </button>
               </form>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
-              <h3 className="text-lg font-semibold mb-4">Liste des employés</h3>
-              <div className="space-y-3">
+            <div className="bg-white rounded-2xl border border-stone-200 p-6 shadow-sm space-y-4">
+              <h3 className="font-bold text-slate-900">Liste des salariés</h3>
+              <div className="divide-y divide-stone-100">
                 {employees.map(emp => (
-                  <div key={emp.id} className="p-3 border rounded-lg flex justify-between items-center">
+                  <div key={emp.id} className="py-3 flex items-center justify-between">
                     <div>
-                      <p className="font-medium">{emp.name}</p>
-                      <p className="text-xs text-slate-500">{emp.department}</p>
+                      <p className="font-bold text-slate-900">{emp.name}</p>
+                      <span className="text-xs text-slate-400">PIN : •••• (Rôle : {emp.role})</span>
                     </div>
-                    <span className="text-xs bg-slate-100 px-2.5 py-1 rounded-md font-mono">PIN: ****</span>
+                    <button
+                      onClick={() => handleDeleteEmployee(emp.id)}
+                      className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 ))}
               </div>
@@ -294,13 +420,5 @@ function PointageApp() {
       </main>
     </div>
   );
-}
-
-export default function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <PointageApp />
-    </QueryClientProvider>
-  );
-                                       }
+      }
       
