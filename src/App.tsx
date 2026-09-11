@@ -361,11 +361,12 @@ export default function App() {
                 {filteredRecords.length === 0 ? (
                   <div style={{ textAlign: 'center', padding: '20px', fontSize: '12px', color: '#64748B' }}>Aucun enregistrement trouvé.</div>
                 ) : (
-                  filteredRecords.map(r => (
-                    <div key={r.id} style={{ backgroundColor: '#F8FAFC', padding: '10px 12px', borderRadius: '10px', border: '1px solid #E2E8F0', fontSize: '12px', display: 'flex', justifyContent: 'space-between', alignIt
-                      
-                            </div>
-          </div>
+                        filteredRecords.map(r => (
+            <div key={r.id} style={{ backgroundColor: '#F8FAFC', padding: '10px 12px', borderRadius: '10px', border: '1px solid #E2E8F0', fontSize: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span>{r.name}</span>
+            </div>
+          ))
+              
         )
       )}
     </div>
