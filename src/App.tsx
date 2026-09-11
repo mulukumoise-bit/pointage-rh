@@ -357,21 +357,21 @@ export default function App() {
                   <button onClick={exportCSV} style={{ padding: '6px 10px', backgroundColor: '#0F4C5C', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}>CSV / Excel</button>
                   <button onClick={() => setIsAdminUnlocked(false)} style={{ padding: '6px 10px', backgroundColor: '#E2E8F0', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}>Verrouiller</button>
                 </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '260px', overflowY: 'auto' }}>
-                {filteredRecords.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: '20px', fontSize: '12px', color: '#64748B' }}>Aucun enregistrement trouvé.</div>
-                ) : (
-                        filteredRecords.map(r => (
-            <div key={r.id} style={{ backgroundColor: '#F8FAFC', padding: '10px 12px', borderRadius: '10px', border: '1px solid #E2E8F0', fontSize: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span>{r.name}</span>
-            </div>
-          ))
-              
-        )
-      )}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+  {filteredRecords.length === 0 ? (
+    <div style={{ textAlign: 'center', padding: '20px', fontSize: '13px', color: '#64748B' }}>Aucun enregistrement trouvé</div>
+  ) : (
+    filteredRecords.map(r => (
+      <div key={r.id} style={{ backgroundColor: '#F8FAFC', padding: '10px 12px', borderRadius: '10px', border: '1px solid #E2E8F0', fontSize: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span>{r.name}</span>
+      </div>
+    ))
+  )}
+</div>
+      </div>
     </div>
   );
 }
 
 export default App;
-                      
+                             
