@@ -363,3 +363,14 @@ export default function App() {
                 ) : (
                   filteredRecords.map(r => (
                     <div key={r.id} style={{ backgroundColor: '#F8FAFC', padding: '10px 12px', borderRadius: '10px', border: '1px solid #E2E8F0', fontSize: '12px', display: 'flex', justifyContent: 'space-between', alignIt
+                      
+                            </div>
+          </div>
+        )
+      )}
+    </div>
+  );
+}
+
+export default App;
+                      
