@@ -311,7 +311,30 @@ export default function App() {
                 🔑 Mot de passe initial de l'entreprise : <b>admin123</b>
               </div>
             </div>
-          ) : (
+                ) : (
+            <div>
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                <input 
+                  type="text"
+                  placeholder="🔍 Rechercher un nom..."
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '12px', backgroundColor: '#fff' }}
+                />
+                <input 
+                  type="date"
+                  value={dateFilter}
+                  onChange={e => setDateFilter(e.target.value)}
+                  style={{ padding: '10px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '12px', backgroundColor: '#fff' }}
+                />
+              </div>
+              {dateFilter && (
+                <div style={{ fontSize: '10px', color: '#D97706', marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Filtre actif sur la date</span>
+                  <button onClick={() => setDateFilter('')} style={{ background: 'none', border: 'none', color: '#D97706', cursor: 'pointer', textDecoration: 'underline' }}>Effacer</button>
+                </div>
+              )}
+              
             <div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '14px' }}>
                 <div style={{ backgroundColor: '#F8FAFC', padding: '10px', borderRadius: '10px', textAlign: 'center', border: '1px solid #E2E8F0' }}>
@@ -334,30 +357,6 @@ export default function App() {
                   <button onClick={exportCSV} style={{ padding: '6px 10px', backgroundColor: '#0F4C5C', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}>CSV / Excel</button>
                   <button onClick={() => setIsAdminUnlocked(false)} style={{ padding: '6px 10px', backgroundColor: '#E2E8F0', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}>Verrouiller</button>
                 </div>
-              </div>
-
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-                <input 
-                  type="text"
-                  placeholder="Rechercher un nom..."
-                  value={searchTerm}
-                  onChange={e => setSearchTerm(e.target.value)}
-                  style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '12px' }}
-                />
-                <input 
-                  type="date"
-                  value={dateFilter}
-                  onChange={e => setDateFilter(e.target.value)}
-                  style={{ padding: '10px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '12px' }}
-                />
-              </div>
-              {dateFilter && (
-                <div style={{ fontSize: '10px', color: '#D97706', marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Filtre actif sur la date</span>
-                  <button onClick={() => setDateFilter('')} style={{ background: 'none', border: 'none', color: '#D97706', cursor: 'pointer', textDecoration: 'underline' }}>Effacer</button>
-                </div>
-              )}
-              
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '260px', overflowY: 'auto' }}>
                 {filteredRecords.length === 0 ? (
                   <div style={{ textAlign: 'center', padding: '20px', fontSize: '12px', color: '#64748B' }}>Aucun enregistrement trouvé.</div>
