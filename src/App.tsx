@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'interface';
-
+import React, { useState, useEffect } from 'react';
 interface AttendanceRecord {
   id: string;
   name: string;
