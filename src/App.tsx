@@ -370,8 +370,6 @@ export default function App() {
   })
   .map(r => (
                      
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '250px', overflowY: 'auto' }}>
-                {records.map((r) => (
                   <div key={r.id} style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
                       <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#0f1f38' }}>{r.name}</div>
