@@ -403,7 +403,7 @@ useEffect(() => {
                       {r.type}
                     </div>
                   </div>
-    }
+    )}
         </div>
 
         {/* Pied de page / Mentions finales */}
