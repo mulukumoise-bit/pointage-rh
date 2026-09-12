@@ -343,26 +343,25 @@ export default function App() {
                   📄 Excel (.xlsx)
                 </button>
               </div>
-
-              <div style={{ display: 'flex', gap: '10px', marginBottom: '16px', flexWrap: 'wrap' }}>
-  <input 
-    type="text" 
-    placeholder="Rechercher par nom..." 
-    value={searchTerm} 
-    onChange={(e) => setSearchTerm(e.target.value)}
-    style={{ flex: 1, minWidth: '200px', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px' }}
-  />
-  <select 
-    value={filterType} 
-    onChange={(e) => setFilterType(e.target.value)}
-    style={{ padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', backgroundColor: 'white' }}
-  >
-    <option value="Tous">Tous les types</option>
-    <option value="Arrivée">Arrivée</option>
-    <option value="Départ">Départ</option>
-  </select>
-</div>
-              
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '16px', flexWrap: 'wrap' }}>
+            <input 
+              type="text" 
+              placeholder="Rechercher par nom..." 
+              value={searchTerm} 
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ flex: 1, minWidth: '200px', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px' }}
+            />
+            <select 
+              value={filterType} 
+              onChange={(e) => setFilterType(e.target.value)}
+              style={{ padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', backgroundColor: 'white' }}
+            >
+              <option value="Tous">Tous les types</option>
+              <option value="Arrivée">Arrivée</option>
+              <option value="Départ">Départ</option>
+            </select>
+          </div>
+            
 {records
   .filter(r => {
     const matchesName = r.name.toLowerCase().includes(searchTerm.toLowerCase());
