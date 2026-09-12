@@ -32,7 +32,14 @@ export default function App() {
     }
   };
   
-  const [records, setRecords] = useState([]);
+  const [records, setRecords] = useState(() => {
+  const saved = localStorage.getItem('pointage_records');
+  return saved ? JSON.parse(saved) : [];
+});
+
+  useEffect(() => {
+  localStorage.setItem('pointage_records', JSON.stringify(records));
+}, [records]);
   
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -335,10 +342,11 @@ export default function App() {
   >
     Excel (.xlsx)
   </button>
-  <button
-    onClick={() => setRecords([])}
-    style={{ backgroundColor: '#fee2e2', color: '#991b1b', border: '1px solid #fca5a5', padding: '10px 14px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
-    title="Réinitialiser la liste"
+  onClick={() => {
+  setRecords([]);
+  localStorage.removeItem('pointage_records');
+}}
+            
   >
     Effacer
   </button>
