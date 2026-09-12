@@ -36,11 +36,11 @@ export default function App() {
 
 useEffect(() => {
   // Vide la mémoire une bonne fois pour toutes
-  localStorage.removeItem('pointage_records');
+  localStorage.removeItem('pointage_records_v2');
 }, []);
 
 useEffect(() => {
-  localStorage.setItem('pointage_records', JSON.stringify(records));
+  localStorage.setItem('pointage_records_v2', JSON.stringify(records));
 }, [records]);
    
   useEffect(() => {
