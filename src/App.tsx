@@ -362,13 +362,13 @@ export default function App() {
             </select>
           </div>
             
-  {records
+{records
   .filter(r => {
     const matchesName = r.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = filterType === 'Tous' || r.type === filterType;
     return matchesName && matchesType;
   })
-   .map(r => (
+  .map(r => (
     
                   <div key={r.id} style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
