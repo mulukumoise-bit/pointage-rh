@@ -317,6 +317,25 @@ export default function App() {
             <span>🕒</span> Historique sauvegardé durablement
           </div>
         </div>
+                {/* Bloc Service Client / Support */}
+        <div style={{ backgroundColor: '#ffffff', borderRadius: '16px', padding: '16px 20px', boxSizing: 'border-box', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span>💬</span>
+            <div>
+              <div style={{ fontSize: '15px', fontWeight: '600' }}>Besoin d'aide ?</div>
+              <div style={{ fontSize: '12px', color: '#64748b' }}>Contactez le support technique</div>
+            </div>
+          </div>
+          <a
+            href="https://wa.me/243995473958?text=Bonjour,%20j'ai%20besoin%20d'assistance%20sur%20Pointage-RH"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ backgroundColor: '#25D366', color: 'white', padding: '8px 14px', borderRadius: '8px', textDecoration: 'none', fontSize: '13px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}
+          >
+            <span>WhatsApp</span>
+          </a>
+        </div>
+          
 
       </div>
     </div>
