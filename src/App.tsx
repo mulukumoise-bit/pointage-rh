@@ -7,7 +7,29 @@ export default function App() {
   const [isAdminUnlocked, setIsAdminUnlocked] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [licenseExpiry, setLicenseExpiry] = useState(() => localStorage.getItem('rh_license_expiry') || '');
+  const [activationCode, setActivationCode] = useState('');
 
+  // Vérifier si la licence est valide
+  const isLicenseValid = () => {
+    if (!licenseExpiry) return false;
+    return new Date().getTime() < new Date(licenseExpiry).getTime();
+  };
+    const handleActivateLicense = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (activationCode === 'PRO2026') {
+      const expiry = new Date();
+      expiry.setDate(expiry.getDate() + 30);
+      const expiryStr = expiry.toISOString();
+      localStorage.setItem('rh_license_expiry', expiryStr);
+      setLicenseExpiry(expiryStr);
+      setActivationCode('');
+      alert('Licence activée avec succès pour 30 jours !');
+    } else {
+      alert('Code d’activation incorrect. Contactez le support via WhatsApp.');
+    }
+  };
+  
   const [records, setRecords] = useState([
     { id: 1, name: 'Moïse Muluku', type: 'Arrivée', time: '21:47:41', lat: -11.57052, lng: 27.55102, coords: '-11.57052, 27.55102' },
     { id: 2, name: 'Muteba john', type: 'Arrivée', time: '22:38:57', lat: -11.57037, lng: 27.55133, coords: '-11.57037, 27.55133' },
@@ -95,6 +117,50 @@ export default function App() {
     }
   };
   
+  if (!isLicenseValid()) {
+    return (
+      <div style={{ minHeight: '100vh', backgroundColor: '#f7f5f0', fontFamily: 'sans-serif', padding: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center', boxSizing: 'border-box' }}>
+        <div style={{ width: '100%', maxWidth: '440px', backgroundColor: '#ffffff', borderRadius: '20px', padding: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
+          <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+            <div style={{ fontSize: '32px', marginBottom: '8px' }}>🔒</div>
+            <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: '#0f172a' }}>Licence Expirée</h2>
+            <p style={{ fontSize: '13px', color: '#64748b', marginTop: '6px' }}>
+              Votre abonnement mensuel à Pointage-RH est échu. Veuillez régler votre facture pour rétablir l'accès complet.
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
+            <a href="https://buy.stripe.com/TON_LIEN_STRIPE" target="_blank" rel="noopener noreferrer" style={{ backgroundColor: '#635BFF', color: 'white', padding: '12px 16px', borderRadius: '10px', textDecoration: 'none', fontSize: '14px', fontWeight: '600', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span>💳 Payer par Carte Bancaire</span>
+              <span style={{ fontSize: '12px', backgroundColor: 'rgba(255,255,255,0.2)', padding: '4px 8px', borderRadius: '6px' }}>Stripe</span>
+            </a>
+            <a href="https://wa.me/243995473958?text=Bonjour,%20je%20souhaite%20payer%20par%20Mobile%20Money%20pour%20renouveler%20Pointage-RH." target="_blank" rel="noopener noreferrer" style={{ backgroundColor: '#FF6600', color: 'white', padding: '12px 16px', borderRadius: '10px', textDecoration: 'none', fontSize: '14px', fontWeight: '600', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span>📱 Payer par Mobile Money</span>
+              <span style={{ fontSize: '12px', backgroundColor: 'rgba(255,255,255,0.2)', padding: '4px 8px', borderRadius: '6px' }}>M-Pesa / Orange</span>
+            </a>
+          </div>
+
+          <form onSubmit={handleActivateLicense} style={{ borderTop: '1px solid #e2e8f0', paddingTop: '16px' }}>
+            <label style={{ fontSize: '12px', fontWeight: '600', color: '#334155', display: 'block', marginBottom: '6px' }}>
+              Vous avez payé ? Entrez votre code d'activation :
+            </label>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <input 
+                type="text" 
+                value={activationCode} 
+                onChange={(e) => setActivationCode(e.target.value)} 
+                placeholder="Ex: PRO2026"
+                style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', boxSizing: 'border-box' }}
+              />
+              <button type="submit" style={{ backgroundColor: '#0f172a', color: 'white', border: 'none', padding: '10px 16px', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}>
+                Activer
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+      }
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f7f5f0', fontFamily: 'sans-serif', padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', color: '#1e293b' }}>
