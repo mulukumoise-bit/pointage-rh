@@ -329,28 +329,31 @@ export default function App() {
                 </button>
               </div>
 
-              <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '16px' }}>
   <button
     onClick={exportCSV}
-    style={{ flex: 1, backgroundColor: '#ffffff', color: '#0f1f38', border: '1px solid #cbd5e1', padding: '10px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
+    style={{ backgroundColor: '#ffffff', color: '#0f1f38', border: '1px solid #cbd5e1', padding: '10px 4px', borderRadius: '8px', fontWeight: 'bold', fontSize: '13px', cursor: 'pointer' }}
   >
     ↓ CSV
   </button>
   <button
     onClick={exportExcel}
-    style={{ flex: 1, backgroundColor: '#ffffff', color: '#0f1f38', border: '1px solid #cbd5e1', padding: '10px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
+    style={{ backgroundColor: '#ffffff', color: '#0f1f38', border: '1px solid #cbd5e1', padding: '10px 4px', borderRadius: '8px', fontWeight: 'bold', fontSize: '13px', cursor: 'pointer' }}
   >
-    Excel (.xlsx)
+    Excel
   </button>
-  <button onClick={() => {
-  setRecords([]);
-  localStorage.removeItem('pointage_records');
-}}
-            
+  <button
+    onClick={() => {
+      setRecords([]);
+      localStorage.removeItem('pointage_records');
+    }}
+    style={{ backgroundColor: '#fee2e2', color: '#991b1b', border: '1px solid #fca5a5', padding: '10px 4px', borderRadius: '8px', fontWeight: 'bold', fontSize: '13px', cursor: 'pointer' }}
+    title="Réinitialiser la liste"
   >
     Effacer
   </button>
 </div>
+              
               
           <div style={{ display: 'flex', gap: '10px', marginBottom: '16px', flexWrap: 'wrap' }}>
             <input 
