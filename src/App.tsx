@@ -9,7 +9,9 @@ export default function App() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [licenseExpiry, setLicenseExpiry] = useState(() => localStorage.getItem('rh_license_expiry') || '');
   const [activationCode, setActivationCode] = useState('');
-
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterType, setFilterType] = useState('Tous');
+  
   // Vérifier si la licence est valide
   const isLicenseValid = () => {
     if (!licenseExpiry) return false;
@@ -342,8 +344,33 @@ export default function App() {
                 </button>
               </div>
 
-              <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '10px' }}>{records.length} lignes enregistrées</div>
-
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '16px', flexWrap: 'wrap' }}>
+  <input 
+    type="text" 
+    placeholder="Rechercher par nom..." 
+    value={searchTerm} 
+    onChange={(e) => setSearchTerm(e.target.value)}
+    style={{ flex: 1, minWidth: '200px', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px' }}
+  />
+  <select 
+    value={filterType} 
+    onChange={(e) => setFilterType(e.target.value)}
+    style={{ padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', backgroundColor: 'white' }}
+  >
+    <option value="Tous">Tous les types</option>
+    <option value="Arrivée">Arrivée</option>
+    <option value="Départ">Départ</option>
+  </select>
+</div>
+              
+{records
+  .filter(r => {
+    const matchesName = r.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesType = filterType === 'Tous' || r.type === filterType;
+    return matchesName && matchesType;
+  })
+  .map(r => (
+                     
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '250px', overflowY: 'auto' }}>
                 {records.map((r) => (
                   <div key={r.id} style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
