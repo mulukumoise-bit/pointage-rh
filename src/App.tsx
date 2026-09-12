@@ -32,15 +32,17 @@ export default function App() {
     }
   };
   
-  const [records, setRecords] = useState(() => {
-  const saved = localStorage.getItem('pointage_records');
-  return saved ? JSON.parse(saved) : [];
-});
+  const [records, setRecords] = useState([]);
 
-  useEffect(() => {
+useEffect(() => {
+  // Vide la mémoire une bonne fois pour toutes
+  localStorage.removeItem('pointage_records');
+}, []);
+
+useEffect(() => {
   localStorage.setItem('pointage_records', JSON.stringify(records));
 }, [records]);
-  
+   
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
