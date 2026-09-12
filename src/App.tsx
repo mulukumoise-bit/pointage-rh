@@ -32,15 +32,8 @@ export default function App() {
     }
   };
   
-  const [records, setRecords] = useState([
-    { id: 1, name: 'Moïse Muluku', type: 'Arrivée', time: '21:47:41', lat: -11.57052, lng: 27.55102, coords: '-11.57052, 27.55102' },
-    { id: 2, name: 'Muteba john', type: 'Arrivée', time: '22:38:57', lat: -11.57037, lng: 27.55133, coords: '-11.57037, 27.55133' },
-    { id: 3, name: 'Samuel', type: 'Arrivée', time: '22:20:15', lat: -11.57049, lng: 27.55111, coords: '-11.57049, 27.55111' },
-    { id: 4, name: 'Moïse Muluku', type: 'Arrivée', time: '18:36:57', lat: -11.57463, lng: 27.53719, coords: '-11.57463, 27.53719' },
-    { id: 5, name: 'Moïse Muluku', type: 'Arrivée', time: '22:27:48', lat: -11.57063, lng: 27.55101, coords: '-11.57063, 27.55101' },
-    { id: 6, name: 'Moïse Muluku', type: 'Arrivée', time: '22:12:51', lat: -11.57069, lng: 27.55092, coords: '-11.57069, 27.55092' },
-  ]);
-
+  const [records, setRecords] = useState([]);
+  
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
@@ -329,20 +322,28 @@ export default function App() {
                 </button>
               </div>
 
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-                <button 
-                  onClick={exportCSV}
-                  style={{ flex: 1, backgroundColor: '#ffffff', color: '#0f1f38', border: '1px solid #cbd5e1', padding: '10px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', textAlign: 'center' }}
-                >
-                  ↓ CSV
-                </button>
-                <button 
-                  onClick={exportCSV}
-                  style={{ flex: 1, backgroundColor: '#ffffff', color: '#0f1f38', border: '1px solid #cbd5e1', padding: '10px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', textAlign: 'center' }}
-                >
-                  📄 Excel (.xlsx)
-                </button>
-              </div>
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
+  <button
+    onClick={exportCSV}
+    style={{ flex: 1, backgroundColor: '#ffffff', color: '#0f1f38', border: '1px solid #cbd5e1', padding: '10px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
+  >
+    ↓ CSV
+  </button>
+  <button
+    onClick={exportExcel}
+    style={{ flex: 1, backgroundColor: '#ffffff', color: '#0f1f38', border: '1px solid #cbd5e1', padding: '10px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
+  >
+    Excel (.xlsx)
+  </button>
+  <button
+    onClick={() => setRecords([])}
+    style={{ backgroundColor: '#fee2e2', color: '#991b1b', border: '1px solid #fca5a5', padding: '10px 14px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
+    title="Réinitialiser la liste"
+  >
+    Effacer
+  </button>
+</div>
+              
           <div style={{ display: 'flex', gap: '10px', marginBottom: '16px', flexWrap: 'wrap' }}>
             <input 
               type="text" 
