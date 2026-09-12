@@ -317,6 +317,47 @@ export default function App() {
             <span>🕒</span> Historique sauvegardé durablement
           </div>
         </div>
+                {/* Bloc Tarifs & Paiement Multi-Options */}
+        <div style={{ backgroundColor: '#ffffff', borderRadius: '16px', padding: '20px', boxSizing: 'border-box', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', marginTop: '16px' }}>
+          <div style={{ fontSize: '16px', fontWeight: '700', marginBottom: '12px', color: '#1e293b' }}>💎 Activer ou Renouveler la Licence</div>
+          <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '16px' }}>Choisissez votre mode de règlement pour valider l'accès complet à Pointage-RH :</div>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {/* Option 1 : Carte Bancaire */}
+            <a 
+              href="https://buy.stripe.com/TON_LIEN_STRIPE" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              style={{ backgroundColor: '#635BFF', color: 'white', padding: '12px 16px', borderRadius: '10px', textDecoration: 'none', fontSize: '14px', fontWeight: '600', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+            >
+              <span>💳 Payer par Carte Bancaire</span>
+              <span style={{ fontSize: '12px', backgroundColor: 'rgba(255,255,255,0.2)', padding: '4px 8px', borderRadius: '6px' }}>Stripe</span>
+            </a>
+
+            {/* Option 2 : Mobile Money */}
+            <a 
+              href="https://wa.me/243995473958?text=Bonjour,%20je%20souhaite%20payer%20par%20Mobile%20Money%20(M-Pesa%20/%20Orange%20Money)." 
+              target="_blank" 
+              rel="noopener noreferrer"
+              style={{ backgroundColor: '#FF6600', color: 'white', padding: '12px 16px', borderRadius: '10px', textDecoration: 'none', fontSize: '14px', fontWeight: '600', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+            >
+              <span>📱 Payer par Mobile Money</span>
+              <span style={{ fontSize: '12px', backgroundColor: 'rgba(255,255,255,0.2)', padding: '4px 8px', borderRadius: '6px' }}>M-Pesa / Orange</span>
+            </a>
+
+            {/* Option 3 : Facture / Devis */}
+            <a 
+              href="https://wa.me/243995473958?text=Bonjour,%20je%20souhaite%20recevoir%20une%20facture%20ou%20un%20devis%20pour%20mon%20entreprise." 
+              target="_blank" 
+              rel="noopener noreferrer"
+              style={{ backgroundColor: '#0f172a', color: 'white', padding: '12px 16px', borderRadius: '10px', textDecoration: 'none', fontSize: '14px', fontWeight: '600', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+            >
+              <span>📄 Facture & Virement / Autre</span>
+              <span style={{ fontSize: '12px', backgroundColor: 'rgba(255,255,255,0.2)', padding: '4px 8px', borderRadius: '6px' }}>Sur Devis</span>
+            </a>
+          </div>
+        </div>
+                      
                 {/* Bloc Service Client / Support */}
         <div style={{ backgroundColor: '#ffffff', borderRadius: '16px', padding: '16px 20px', boxSizing: 'border-box', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
