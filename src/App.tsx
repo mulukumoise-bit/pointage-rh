@@ -342,7 +342,7 @@ export default function App() {
   >
     Excel (.xlsx)
   </button>
-  onClick={() => {
+  <button onClick={() => {
   setRecords([]);
   localStorage.removeItem('pointage_records');
 }}
