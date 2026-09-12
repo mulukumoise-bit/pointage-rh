@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 
 export default function App() {
-  const [name, setName] = useState('');
-  const [company, setCompany] = useState('Atelier Tech');
-  const [isChangingCompany, setIsChangingCompany] = useState(false);
-  const [tempCompany, setTempCompany] = useState('Atelier Tech');
-
+  const [company, setCompany] = useState(() => localStorage.getItem('companyName') || '');
+  const [isChangingCompany, setIsChangingCompany] = useState(!localStorage.getItem('companyName'));
+  const [tempCompany, setTempCompany] = useState(() => localStorage.getItem('companyName') || '');
   const [isAdminUnlocked, setIsAdminUnlocked] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -89,12 +87,14 @@ export default function App() {
     }
   };
 
-  const handleSaveCompany = () => {
+    const handleSaveCompany = () => {
     if (tempCompany.trim()) {
       setCompany(tempCompany.trim());
+      localStorage.setItem('companyName', tempCompany.trim());
       setIsChangingCompany(false);
     }
   };
+  
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f7f5f0', fontFamily: 'sans-serif', padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', color: '#1e293b' }}>
@@ -116,20 +116,20 @@ export default function App() {
           </div>
         </div>
 
-        {/* Bloc Nom de l'entreprise */}
-        <div style={{ backgroundColor: '#ffffff', borderRadius: '16px', padding: '16px 20px', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        {/* Bloc Nom de l'entreprise */}
+        <div style={{ backgroundColor: '#ffffff', borderRadius: '16px', padding: '16px 20px', boxSizing: 'border-box', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '16px' }}>🏢</span>
-            <span style={{ fontSize: '15px', fontWeight: '600' }}>{company}</span>
+            <span>🏢</span>
+            <span style={{ fontSize: '15px', fontWeight: '600' }}>{company || "Créer votre entreprise"}</span>
           </div>
-          <button 
+          <button
             onClick={() => { setTempCompany(company); setIsChangingCompany(!isChangingCompany); }}
-            style={{ background: 'transparent', border: 'none', color: '#0f3d3e', fontSize: '13px', fontWeight: '600', cursor: 'pointer', textDecoration: 'underline' }}
+            style={{ background: 'transparent', border: 'none', color: '#0f3d3e', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
           >
-            Changer
+            {company ? "Changer" : "Créer"}
           </button>
         </div>
-
+                          
         {isChangingCompany && (
           <div style={{ backgroundColor: '#ffffff', borderRadius: '12px', padding: '14px', boxShadow: '0 2px 6px rgba(0,0,0,0.04)', display: 'flex', gap: '8px' }}>
             <input 
