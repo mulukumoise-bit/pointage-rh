@@ -391,9 +391,6 @@ export default function App() {
                       {r.type}
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
           )}
         </div>
 
