@@ -305,13 +305,22 @@ export default function App() {
                 <h2 style={{ fontSize: '14px', margin: 0, color: '#0f3d3e' }}>📊 Registre des Présences</h2>
                 <p style={{ fontSize: '11px', color: '#64748b', margin: '2px 0 0 0' }}>Total enregistrements : {records.length}</p>
               </div>
-              <button 
-                onClick={handleExportRealExcel}
-                style={{ fontSize: '12px', backgroundColor: '#166534', color: 'white', border: 'none', padding: '8px 12px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-              >
-                📥 Télécharger Excel (.xlsx)
-              </button>
-            </div>
+              <button
+  onClick={handleExportRealExcel}
+  style={{
+    backgroundColor: '#065f46',
+    color: '#ffffff',
+    border: 'none',
+    padding: '8px 14px',
+    borderRadius: '8px',
+    fontWeight: 'bold',
+    fontSize: '12px',
+    cursor: 'pointer'
+  }}
+>
+  📋 Copier le rapport
+</button>
+              
 
             {records.length === 0 ? (
               <p style={{ textAlign: 'center', color: '#94a3b8', fontSize: '12px', margin: '20px 0' }}>Aucun pointage enregistré pour le moment.</p>
