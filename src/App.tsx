@@ -164,31 +164,29 @@ export default function App() {
 
     // Export Excel robuste sans passer par le piège du WebView mobile
     // Export par partage natif du téléphone (WhatsApp, Drive, Email...) sans boîte "Save As"
-    const handleExportRealExcel = () => {
+      const handleExportRealExcel = () => {
     if (records.length === 0) {
       alert("Aucune donnée à exporter.");
       return;
     }
 
-    const dataToExport = records.map(r => ({
-      "Nom & Prénom": r.name,
-      "Type de Pointage": r.type,
-      "Date": r.date,
-      "Heure": r.time,
-      "Coordonnées GPS": r.coords
-    }));
+    // Création des lignes au format CSV (séparateur point-virgule pour Excel français)
+    const headers = ["Nom & Prenom", "Type de Pointage", "Date", "Heure", "Coordonnees GPS"];
+    const rows = records.map(r => [
+      `"${r.name.replace(/"/g, '""')}"`,
+      `"${r.type}"`,
+      `"${r.date}"`,
+      `"${r.time}"`,
+      `"${r.coords}"`
+    ]);
 
-    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Présences");
-
-    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-    const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const csvContent = "\uFEFF" + [headers.join(";"), ...rows.map(e => e.join(";"))].join("\n");
     
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Pointage_${company.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.xlsx`;
+    a.download = `Pointage_${company.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.csv`;
     
     document.body.appendChild(a);
     a.click();
@@ -198,6 +196,7 @@ export default function App() {
       window.URL.revokeObjectURL(url);
     }, 100);
   };
+  
   
   
   
