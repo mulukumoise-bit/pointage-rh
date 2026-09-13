@@ -317,7 +317,6 @@ export default function App() {
     fontSize: '12px',
     cursor: 'pointer'
   }}
->
   📋 Copier le rapport
 </button>
               
