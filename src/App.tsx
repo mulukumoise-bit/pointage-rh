@@ -163,7 +163,8 @@ export default function App() {
   };
 
     // Export Excel robuste sans passer par le piège du WebView mobile
-  const handleExportRealExcel = () => {
+    // Export par partage natif du téléphone (WhatsApp, Drive, Email...) sans boîte "Save As"
+  const handleExportRealExcel = async () => {
     if (records.length === 0) {
       alert("Aucune donnée à exporter.");
       return;
@@ -181,24 +182,38 @@ export default function App() {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Présences");
 
-    // Génération directe en tableau binaire sécurisé pour mobile
     const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
     const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    
-    // Création d'une URL de téléchargement explicite avec nom de fichier forcé
+    const fileName = `Pointage_${company.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.xlsx`;
+    const file = new File([blob], fileName, { type: blob.type });
+
+    // Utilisation du menu de partage natif du téléphone (si supporté)
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({
+          title: 'Registre des Présences',
+          text: `Rapport de pointage - ${company}`,
+          files: [file],
+        });
+        return;
+      } catch (error) {
+        if ((error as any).name !== 'AbortError') {
+          console.log("Partage annulé ou non disponible", error);
+        }
+      }
+    }
+
+    // Solution de secours universelle si le partage direct est restreint : téléchargement direct propre
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Pointage_${company.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.xlsx`;
-    
+    a.download = fileName;
     document.body.appendChild(a);
     a.click();
-    
-    setTimeout(() => {
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-    }, 100);
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
   };
+  
   
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f4f6f9', fontFamily: 'Arial, sans-serif', padding: '12px', color: '#333', boxSizing: 'border-box' }}>
