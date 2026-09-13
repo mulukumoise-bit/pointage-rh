@@ -321,6 +321,7 @@ export default function App() {
   📋 Copier le rapport
 </button>
               
+              
 
             {records.length === 0 ? (
               <p style={{ textAlign: 'center', color: '#94a3b8', fontSize: '12px', margin: '20px 0' }}>Aucun pointage enregistré pour le moment.</p>
