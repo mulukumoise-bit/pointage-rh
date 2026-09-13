@@ -164,7 +164,7 @@ export default function App() {
 
     // Export Excel robuste sans passer par le piège du WebView mobile
     // Export par partage natif du téléphone (WhatsApp, Drive, Email...) sans boîte "Save As"
-  const handleExportRealExcel = async () => {
+    const handleExportRealExcel = () => {
     if (records.length === 0) {
       alert("Aucune donnée à exporter.");
       return;
@@ -184,35 +184,21 @@ export default function App() {
 
     const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
     const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    const fileName = `Pointage_${company.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.xlsx`;
-    const file = new File([blob], fileName, { type: blob.type });
-
-    // Utilisation du menu de partage natif du téléphone (si supporté)
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      try {
-        await navigator.share({
-          title: 'Registre des Présences',
-          text: `Rapport de pointage - ${company}`,
-          files: [file],
-        });
-        return;
-      } catch (error) {
-        if ((error as any).name !== 'AbortError') {
-          console.log("Partage annulé ou non disponible", error);
-        }
-      }
-    }
-
-    // Solution de secours universelle si le partage direct est restreint : téléchargement direct propre
+    
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = fileName;
+    a.download = `Pointage_${company.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.xlsx`;
+    
     document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
+    
+    setTimeout(() => {
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    }, 100);
   };
+  
   
   
   return (
