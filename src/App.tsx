@@ -299,27 +299,28 @@ export default function App() {
         ) : (
           <div style={{ backgroundColor: '#ffffff', padding: '14px', borderRadius: '12px', marginBottom: '12px', border: '2px solid #0f3d3e', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
             
-            {/* Barre d'action Admin avec le bouton Vrai Export Excel (.xlsx) */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-              <div>
-                <h2 style={{ fontSize: '14px', margin: 0, color: '#0f3d3e' }}>📊 Registre des Présences</h2>
-                <p style={{ fontSize: '11px', color: '#64748b', margin: '2px 0 0 0' }}>Total enregistrements : {records.length}</p>
-              </div>
-              <button
-  onClick={handleExportRealExcel}
-  style={{
-    backgroundColor: '#065f46',
-    color: '#ffffff',
-    border: 'none',
-    padding: '8px 14px',
-    borderRadius: '8px',
-    fontWeight: 'bold',
-    fontSize: '12px',
-    cursor: 'pointer'
-  }}
-  📋 Copier le rapport
-</button>
-              
+             {/* Bouton de copie du rapport optimisé */}
+<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+  <div>
+    <h2 style={{ fontSize: '14px', margin: '0', color: '#0f3d3e' }}>📊 Registre des Présences</h2>
+    <p style={{ fontSize: '11px', color: '#64748b', margin: '2px 0 0 0' }}>Historique complet</p>
+  </div>
+    <button
+    onClick={handleExportRealExcel}
+    style={{
+      backgroundColor: '#065f46',
+      color: '#ffffff',
+      border: 'none',
+      padding: '8px 14px',
+      borderRadius: '8px',
+      fontWeight: 'bold',
+      fontSize: '12px',
+      cursor: 'pointer'
+    }}>
+    📋 Copier le rapport
+  </button>
+  
+  
               
 
             {records.length === 0 ? (
