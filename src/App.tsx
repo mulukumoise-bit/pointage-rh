@@ -164,37 +164,46 @@ export default function App() {
 
     // Export Excel robuste sans passer par le piège du WebView mobile
     // Export par partage natif du téléphone (WhatsApp, Drive, Email...) sans boîte "Save As"
-      const handleExportRealExcel = () => {
+        const handleExportRealExcel = () => {
     if (records.length === 0) {
       alert("Aucune donnée à exporter.");
       return;
     }
 
-    // Création des lignes au format CSV (séparateur point-virgule pour Excel français)
-    const headers = ["Nom & Prenom", "Type de Pointage", "Date", "Heure", "Coordonnees GPS"];
-    const rows = records.map(r => [
-      `"${r.name.replace(/"/g, '""')}"`,
-      `"${r.type}"`,
-      `"${r.date}"`,
-      `"${r.time}"`,
-      `"${r.coords}"`
-    ]);
+    // Création d'un rapport texte propre et structuré pour l'entreprise
+    let reportText = `📋 *REGISTRE DES PRÉSENCES - ${company}*\n`;
+    reportText += `Date du jour : ${new Date().toLocaleDateString('fr-FR')}\n\n`;
+    
+    records.forEach((r, index) => {
+      reportText += `${index + 1}. *${r.name}* - ${r.type} à ${r.time} (${r.date})\n`;
+    });
 
-    const csvContent = "\uFEFF" + [headers.join(";"), ...rows.map(e => e.join(";"))].join("\n");
-    
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Pointage_${company.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.csv`;
-    
-    document.body.appendChild(a);
-    a.click();
-    
-    setTimeout(() => {
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-    }, 100);
+    reportText += `\nTotal enregistrements : ${records.length}`;
+
+    // Copie instantanée dans le presse-papier du téléphone
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(reportText).then(() => {
+        alert("✅ Rapport copié avec succès ! Vous pouvez le coller directement dans un e-mail ou un message.");
+      }).catch(() => {
+        fallbackCopyText(reportText);
+      });
+    } else {
+      fallbackCopyText(reportText);
+    }
+  };
+
+  const fallbackCopyText = (text: string) => {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      alert("✅ Rapport copié avec succès !");
+    } catch (err) {
+      alert("Erreur lors de la copie du rapport.");
+    }
+    document.body.removeChild(textArea);
   };
   
   
