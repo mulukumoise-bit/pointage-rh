@@ -162,14 +162,13 @@ export default function App() {
     }
   };
 
-  // Génération directe d'un vrai fichier .xlsx professionnel téléchargeable en un clic
+    // Export Excel robuste sans passer par le piège du WebView mobile
   const handleExportRealExcel = () => {
     if (records.length === 0) {
       alert("Aucune donnée à exporter.");
       return;
     }
 
-    // Préparation des données propres pour Excel
     const dataToExport = records.map(r => ({
       "Nom & Prénom": r.name,
       "Type de Pointage": r.type,
@@ -178,15 +177,29 @@ export default function App() {
       "Coordonnées GPS": r.coords
     }));
 
-    // Création du classeur Excel
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Présences");
 
-    // Lancement du téléchargement du fichier .xlsx
-    XLSX.writeFile(workbook, `Pointage_${company.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.xlsx`);
+    // Génération directe en tableau binaire sécurisé pour mobile
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    
+    // Création d'une URL de téléchargement explicite avec nom de fichier forcé
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Pointage_${company.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.xlsx`;
+    
+    document.body.appendChild(a);
+    a.click();
+    
+    setTimeout(() => {
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    }, 100);
   };
-
+  
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f4f6f9', fontFamily: 'Arial, sans-serif', padding: '12px', color: '#333', boxSizing: 'border-box' }}>
       <div style={{ maxWidth: '600px', margin: '0 auto' }}>
