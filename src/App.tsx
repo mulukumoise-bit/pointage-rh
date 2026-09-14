@@ -11,7 +11,7 @@ interface Pointage {
 
 export default function App() {
   // Numéro WhatsApp du Service Client (à modifier avec votre numéro)
-  const numeroWhatsApp = '243000000000';
+  const numeroWhatsApp = '243995473958';
 
   // États de l'application
   const [nomEntreprise, setNomEntreprise] = useState<string>('');
