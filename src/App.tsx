@@ -153,32 +153,44 @@ export default function App() {
     }
   };
 
-  // VRAI TÉLÉCHARGEMENT DU FICHIER CSV POUR SMARTPHONE
-  const ExporterCSV = () => {
+    // COPIER LE RAPPORT DANS LE PRESSE-PAPIERS (Pour coller sur WhatsApp, Notes, Excel, etc.)
+  const CopierRapport = () => {
     if (historique.length === 0) {
-      notifier('Données vide', 'Aucun pointage disponible à exporter.', 'info');
+      notifier('Données vides', 'Aucun pointage disponible à copier.', 'info');
       return;
     }
 
-    let csvContent = '\uFEFF'; // Encodage UTF-8 avec BOM pour Excel
-    csvContent += 'ID;Date;Heure;Employe;Type;GPS;Statut Zone\n';
+    let texteRapport = `📋 RAPPORT DE POINTAGE - ${nomEntreprise || 'RH'}\n`;
+    texteRapport += `Généré le : ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}\n`;
+    texteRapport += `-----------------------------------\n\n`;
 
-    historique.forEach((p) => {
-      const zoneText = p.estDansLaZone ? 'Conforme (Dans la zone)' : 'Alerte (Hors zone)';
-      csvContent += `${p.id};${p.date};${p.heure};"${p.nom}";${p.type};"${p.gps}";${zoneText}\n`;
+    historique.forEach((p, idx) => {
+      const statutZone = p.estDansLaZone ? '✅ Dans la zone' : '⚠️ Hors zone';
+      texteRapport += `${idx + 1}. ${p.nom}\n`;
+      texteRapport += `   • Action : ${p.type.toUpperCase()}\n`;
+      texteRapport += `   • Date & Heure : ${p.date} à ${p.heure}\n`;
+      texteRapport += `   • Position : ${statutZone} (${p.gps})\n\n`;
     });
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', `Rapport_Pointage_${nomEntreprise || 'RH'}_${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    texteRapport += `-----------------------------------\nTotal : ${historique.length} pointage(s)`;
 
-    notifier('Téléchargement', 'Le fichier CSV a été généré et enregistré dans votre téléphone.', 'succes');
+    // Copie automatique dans le presse-papiers
+    navigator.clipboard.writeText(texteRapport)
+      .then(() => {
+        notifier('Copié !', 'Le rapport a été copié dans le presse-papiers. Vous pouvez le coller sur WhatsApp, e-mail ou ailleurs.', 'succes');
+      })
+      .catch(() => {
+        // Option de secours au cas où le navigateur est plus ancien
+        const textArea = document.createElement('textarea');
+        textArea.value = texteRapport;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        notifier('Copié !', 'Le rapport a été copié dans le presse-papiers. Vous pouvez le coller n\'importe où.', 'succes');
+      });
   };
+  
 
   const Reabonner = (e: React.FormEvent) => {
     e.preventDefault();
@@ -382,19 +394,143 @@ export default function App() {
           </div>
         )}
 
-        {/* --- ONGLET 2: ADMINISTRATION & RAPPORTS --- */}
-        {onglets === 'admin' && (
+            {/* --- ONGLET 2: ADMINISTRATION & RAPPORTS --- */}
+    {onglets === 'admin' && (
+      <div>
+        {!estAdminAuthentifie ? (
+          <div style={{ backgroundColor: '#ffffff', borderRadius: '16px', padding: '24px', border: '1px solid #e2e8f0' }}>
+            <h2 style={{ marginTop: 0, fontSize: '18px', fontWeight: '800' }}>Accès Sécurisé RH</h2>
+            <p style={{ color: '#64748b', fontSize: '14px', marginBottom: '16px' }}>Entrez votre code confidentiel administration.</p>
+            <form onSubmit={ConnexionAdmin}>
+              <input
+                type="password"
+                placeholder="Code Admin (par défaut: admin123)"
+                value={codeAdminInput}
+                onChange={(e) => setCodeAdminInput(e.target.value)}
+                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '15px', marginBottom: '12px', boxSizing: 'border-box' }}
+              />
+              {erreurAdmin && <p style={{ color: '#ef4444', fontSize: '13px', marginTop: 0 }}>{erreurAdmin}</p>}
+              <button type="submit" style={{ width: '100%', padding: '12px', backgroundColor: '#0f172a', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: '700', fontSize: '14px', cursor: 'pointer' }}>
+                Se Connecter
+              </button>
+            </form>
+          </div>
+        ) : (
           <div>
-            {!estAdminAuthentifie ? (
-              <div style={{ backgroundColor: '#ffffff', borderRadius: '16px', padding: '24px', border: '1px solid #e2e8f0' }}>
-                <h2 style={{ marginTop: 0, fontSize: '18px', fontWeight: '800' }}>Accès Sécurisé RH</h2>
-                <p style={{ color: '#64748b', fontSize: '14px', marginBottom: '16px' }}>Entrez votre code confidentiel administrateur.</p>
-                <form onSubmit={ConnexionAdmin}>
-                  <input
-                    type="password"
-                    placeholder="Code Admin (par défaut: admin123)"
-                    value={codeAdminInput}
-                    onChange={(e) => setCodeAdminInput(e.target.value)}
-                    style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '15px', boxSizing: 'border-box', marginBottom: '10px' }}
-                  />
-                  {e
+            {/* BOUTONS ACTIONS RH */}
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
+              <button
+                onClick={CopierRapport}
+                style={{ flex: 1, padding: '12px', backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: '700', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+              >
+                📋 Copier-Coller le Rapport
+              </button>
+              <button
+                onClick={() => setModaleConfirmationVidage(true)}
+                style={{ flex: 1, padding: '12px', backgroundColor: '#d97706', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: '700', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+              >
+                🗑️ Vider l'historique
+              </button>
+            </div>
+
+            {/* HISTORIQUE COMPLET */}
+            <div style={{ backgroundColor: '#ffffff', borderRadius: '16px', padding: '20px', border: '1px solid #e2e8f0' }}>
+              <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: '700' }}>Historique Global des Pointages ({historique.length})</h3>
+              {historique.length === 0 ? (
+                <p style={{ color: '#94a3b8', fontSize: '14px', textAlign: 'center', margin: '20px 0' }}>Aucun pointage enregistré.</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {historique.map((p) => (
+                    <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', borderRadius: '10px', backgroundColor: '#f8fafc', border: '1px solid #f1f5f9' }}>
+                      <div>
+                        <div style={{ fontWeight: '700', fontSize: '14px', color: '#0f172a' }}>{p.nom}</div>
+                        <div style={{ fontSize: '12px', color: '#64748b' }}>{p.date} à {p.heure}</div>
+                        <div style={{ fontSize: '11px', color: p.estDansLaZone ? '#16a34a' : '#dc2626', fontWeight: '600', marginTop: '2px' }}>
+                          📍 GPS : {p.gps} ({p.estDansLaZone ? 'Dans la zone' : 'Hors zone'})
+                        </div>
+                      </div>
+                      <span style={{ padding: '6px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: '700', backgroundColor: p.type === 'Arrivée' ? '#dcfce7' : '#fee2e2', color: p.type === 'Arrivée' ? '#15803d' : '#b91c1c' }}>
+                        {p.type}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    )}
+
+    {/* --- ONGLET 3: SERVICE CLIENT & ABONNEMENT --- */}
+    {onglets === 'abonnement' && (
+      <div style={{ backgroundColor: '#ffffff', borderRadius: '16px', padding: '20px', border: '1px solid #e2e8f0' }}>
+        <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: '700' }}>📲 Service Client & Abonnement</h3>
+        <p style={{ color: '#64748b', fontSize: '13px', lineHeight: '1.5', margin: '0 0 16px 0' }}>
+          Paiement Airtel Money : <strong>{NUMERO_AIRTEL}</strong>
+        </p>
+        <button
+          onClick={ContacterWhatsApp}
+          style={{ width: '100%', padding: '12px', backgroundColor: '#16a34a', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: '700', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+        >
+          💬 Discuter sur WhatsApp
+        </button>
+      </div>
+    )}
+  </main>
+
+  {/* --- MODALE DÉSOLÉ / NOTIFICATION DYNAMIQUE --- */}
+  {modaleInfo.ouverte && (
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', zIndex: 1000 }}>
+      <div style={{ backgroundColor: '#fff', borderRadius: '16px', padding: '24px', maxWidth: '360px', width: '100%', textAlign: 'center', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
+        <h3 style={{ marginTop: 0, fontSize: '18px', fontWeight: '800', color: modaleInfo.type === 'erreur' ? '#dc2626' : modaleInfo.type === 'succes' ? '#16a34a' : '#0f172a' }}>
+          {modaleInfo.titre}
+        </h3>
+        <p style={{ color: '#475569', fontSize: '14px', margin: '16px 0 24px 0', lineHeight: '1.5' }}>
+          {modaleInfo.texte}
+        </p>
+        <button
+          onClick={() => setModaleInfo({ ...modaleInfo, ouverte: false })}
+          style={{ width: '100%', padding: '12px', backgroundColor: '#0f172a', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: '700', fontSize: '14px', cursor: 'pointer' }}
+        >
+          OK
+        </button>
+      </div>
+    </div>
+  )}
+
+  {/* --- MODALE CONFIRMATION VIDAGE HISTORIQUE --- */}
+  {modaleConfirmationVidage && (
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', zIndex: 1000 }}>
+      <div style={{ backgroundColor: '#fff', borderRadius: '16px', padding: '24px', maxWidth: '360px', width: '100%', textAlign: 'center', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
+        <h3 style={{ marginTop: 0, fontSize: '18px', fontWeight: '800', color: '#d97706' }}>
+          Confirmation
+        </h3>
+        <p style={{ color: '#475569', fontSize: '14px', margin: '16px 0 24px 0', lineHeight: '1.5' }}>
+          Voulez-vous vraiment effacer tout l'historique des pointages ? Cette action est irréversible.
+        </p>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button
+            onClick={() => setModaleConfirmationVidage(false)}
+            style={{ flex: 1, padding: '12px', backgroundColor: '#e2e8f0', color: '#334155', border: 'none', borderRadius: '8px', fontWeight: '700', fontSize: '14px', cursor: 'pointer' }}
+          >
+            Annuler
+          </button>
+          <button
+            onClick={() => {
+              setHistorique([]);
+              setModaleConfirmationVidage(false);
+              notifier('Historique vidé', 'Tous les pointages ont été effacés.', 'succes');
+            }}
+            style={{ flex: 1, padding: '12px', backgroundColor: '#dc2626', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: '700', fontSize: '14px', cursor: 'pointer' }}
+          >
+            Oui, Vider
+          </button>
+        </div>
+      </div>
+    </div>
+  )}
+</div>
+);
+                  }
+                           
